@@ -10,15 +10,25 @@
     <div class="cloud c2" />
     <div class="cloud c3" />
 
-    <!-- Desktop icons column -->
-    <div class="absolute top-3 left-3 flex flex-col gap-4 z-10">
+    <!-- Left column: portfolio icons -->
+    <div class="absolute top-3 left-3 flex flex-col gap-3 z-10">
       <DesktopIcon v-for="w in desktopWindows" :key="w.id"
         :icon="w.icon" :label="w.title"
         @dblclick="winStore.openWindow(w.id)"
       />
-      <!-- External icons -->
       <DesktopIcon icon="💼" label="LinkedIn" href="https://linkedin.com/in/danjmccarthy" />
       <DesktopIcon icon="🐙" label="GitHub" href="https://github.com/HansDandle" />
+    </div>
+
+    <!-- Right column: project icons -->
+    <div class="absolute top-3 right-3 flex flex-col gap-3 z-10">
+      <DesktopIcon
+        v-for="p in PROJECTS"
+        :key="p.id"
+        :img-src="p.favicon"
+        :label="p.label"
+        :href="p.url"
+      />
     </div>
 
     <!-- Windows -->
@@ -60,11 +70,11 @@
 import { ref, computed } from 'vue'
 import { useWindowsStore } from '../stores/windowsStore.js'
 import { WINDOWS } from '../data/windows.js'
+import { PROJECTS } from '../data/projects.js'
 import XpWindow from './XpWindow.vue'
 import DesktopIcon from './DesktopIcon.vue'
 import Taskbar from './Taskbar.vue'
 import StartMenu from './StartMenu.vue'
-import MyProjects from './windows/MyProjects.vue'
 import MyCV from './windows/MyCV.vue'
 import Minesweeper from './windows/Minesweeper.vue'
 import Terminal from './windows/Terminal.vue'
@@ -79,9 +89,7 @@ const openWindows = computed(() => winStore.openWindows)
 function winDef(id) {
   const w = WINDOWS.find(w => w.id === id)
   return {
-    id: w.id,
-    title: w.title,
-    icon: w.icon,
+    id: w.id, title: w.title, icon: w.icon,
     initX: w.initX, initY: w.initY,
     initW: w.initW, initH: w.initH,
     minW: w.minW, minH: w.minH,
@@ -89,17 +97,14 @@ function winDef(id) {
   }
 }
 
-const componentMap = { projects: MyProjects, cv: MyCV, minesweeper: Minesweeper, terminal: Terminal, bio: Bio }
+const componentMap = { cv: MyCV, minesweeper: Minesweeper, terminal: Terminal, bio: Bio }
 function windowComponent(id) { return componentMap[id] }
 
 function onTaskbarClick(id) {
   const w = winStore.openWindows.find(x => x.id === id)
   if (!w) return
-  if (winStore.activeWindowId === id && !w.minimized) {
-    winStore.toggleMinimize(id)
-  } else {
-    winStore.setActive(id)
-  }
+  if (winStore.activeWindowId === id && !w.minimized) winStore.toggleMinimize(id)
+  else winStore.setActive(id)
 }
 </script>
 

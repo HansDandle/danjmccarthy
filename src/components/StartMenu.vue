@@ -1,7 +1,7 @@
 <template>
   <Transition name="start">
     <div v-if="open"
-      class="fixed bottom-[30px] left-0 w-[330px] z-[9998] overflow-hidden"
+      class="fixed bottom-[30px] left-0 w-[370px] z-[9998] overflow-hidden"
       style="border:1px solid #0b3fa5; border-radius:6px 6px 0 0; box-shadow:3px -3px 12px rgba(0,0,0,.5)">
 
       <!-- Header -->
@@ -17,7 +17,6 @@
         <div class="flex-1 border-r border-[#d4d0c8] py-2">
           <p class="text-[10px] font-bold text-[#666] uppercase tracking-wide px-3 mb-1">Portfolio</p>
           <MenuItem icon="📝" label="bio.txt" sub="About Dan" @click="$emit('open', 'bio')" />
-          <MenuItem icon="📁" label="My Projects" sub="See all projects" @click="$emit('open', 'projects')" />
           <MenuItem icon="📄" label="My CV" sub="View resume" @click="$emit('open', 'cv')" />
           <MenuItem icon="💣" label="Minesweeper" sub="Take a break" @click="$emit('open', 'minesweeper')" />
           <MenuItem icon="🖥️" label="Terminal" sub="Run commands" @click="$emit('open', 'terminal')" />
@@ -25,12 +24,12 @@
           <MenuItem icon="💼" label="LinkedIn" sub="linkedin.com/in/danjmccarthy" :href="'https://linkedin.com/in/danjmccarthy'" />
           <MenuItem icon="🐙" label="GitHub" sub="github.com/HansDandle" :href="'https://github.com/HansDandle'" />
         </div>
-        <!-- Right -->
-        <div class="w-[130px] py-2" style="background:#dce4f5">
-          <p class="text-[10px] font-bold text-[#666] uppercase tracking-wide px-3 mb-1">Links</p>
-          <MenuItem icon="✉️" label="Email Me" :href="'mailto:danshandle@gmail.com'" small />
+        <!-- Right: projects -->
+        <div class="w-[148px] py-2 overflow-y-auto" style="background:#dce4f5; max-height:300px">
+          <p class="text-[10px] font-bold text-[#666] uppercase tracking-wide px-3 mb-1">Projects</p>
+          <ProjectItem v-for="p in PROJECTS" :key="p.id" :project="p" @click="$emit('close')" />
           <div class="border-t border-[#b0b8d0] my-1" />
-          <MenuItem icon="📰" label="About" small @click="$emit('open', 'cv')" />
+          <MenuItem icon="✉️" label="Email Me" :href="'mailto:danshandle@gmail.com'" small />
         </div>
       </div>
 
@@ -46,9 +45,27 @@
 
 <script setup>
 import { defineComponent, h } from 'vue'
+import { PROJECTS } from '../data/projects.js'
 
 defineProps({ open: Boolean })
 defineEmits(['open', 'close'])
+
+const ProjectItem = defineComponent({
+  props: ['project'],
+  emits: ['click'],
+  setup(props, { emit }) {
+    return () => h('a', {
+      href: props.project.url,
+      target: '_blank',
+      rel: 'noopener',
+      class: 'flex items-center gap-1.5 px-2 py-1 cursor-default hover:bg-[#316ac5] hover:text-white no-underline text-black',
+      onClick: () => emit('click'),
+    }, [
+      h('img', { src: props.project.favicon, alt: '', class: 'w-4 h-4 object-contain flex-shrink-0' }),
+      h('span', { class: 'text-[11px] font-bold truncate' }, props.project.label),
+    ])
+  },
+})
 
 const MenuItem = defineComponent({
   props: ['icon', 'label', 'sub', 'href', 'small'],

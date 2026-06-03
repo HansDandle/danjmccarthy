@@ -1,14 +1,5 @@
 export const WINDOWS = [
   {
-    id: 'projects',
-    title: 'My Projects',
-    icon: '📁',
-    initX: 180, initY: 80,
-    initW: 680, initH: 480,
-    minW: 320, minH: 200,
-    onDesktop: true,
-  },
-  {
     id: 'cv',
     title: 'My CV',
     icon: '📄',

@@ -3,19 +3,36 @@
     :is="href ? 'a' : 'div'"
     v-bind="href ? { href, target: '_blank', rel: 'noopener' } : {}"
     class="flex flex-col items-center w-[76px] cursor-default p-1 rounded select-none group no-underline"
-    :class="selected ? 'bg-[rgba(49,106,197,0.5)] border border-[rgba(49,106,197,0.8)]' : 'border border-transparent hover:bg-[rgba(49,106,197,0.3)] hover:border-[rgba(49,106,197,0.6)]'"
+    :class="selected
+      ? 'bg-[rgba(49,106,197,0.5)] border border-[rgba(49,106,197,0.8)]'
+      : 'border border-transparent hover:bg-[rgba(49,106,197,0.3)] hover:border-[rgba(49,106,197,0.6)]'"
     @click="href ? null : (selected = !selected)"
     @dblclick="$emit('dblclick')"
   >
-    <span class="text-[40px] leading-none">{{ icon }}</span>
-    <span class="mt-1 text-white text-[11px] text-center leading-snug max-w-[72px] break-words"
-          style="text-shadow: 1px 1px 2px #000, 0 0 4px #000">{{ label }}</span>
+    <!-- Favicon image icon -->
+    <div v-if="imgSrc" class="w-10 h-10 flex items-center justify-center">
+      <img
+        :src="imgSrc"
+        :alt="label"
+        class="w-10 h-10 object-contain"
+        style="image-rendering: pixelated"
+        @error="imgFailed = true"
+      />
+    </div>
+    <!-- Emoji fallback or primary emoji icon -->
+    <span v-else class="text-[40px] leading-none">{{ icon }}</span>
+
+    <span
+      class="mt-1 text-white text-[11px] text-center leading-snug max-w-[72px] break-words"
+      style="text-shadow: 1px 1px 2px #000, 0 0 4px #000"
+    >{{ label }}</span>
   </component>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-defineProps({ icon: String, label: String, href: String })
+defineProps({ icon: String, label: String, href: String, imgSrc: String })
 defineEmits(['dblclick'])
 const selected = ref(false)
+const imgFailed = ref(false)
 </script>
