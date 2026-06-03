@@ -7,7 +7,7 @@
       <!-- Header -->
       <div class="flex items-center gap-3 p-2"
            style="background:linear-gradient(90deg,#1e50c8 0%,#3a8fe8 100%)">
-        <div class="w-12 h-12 rounded flex items-center justify-center text-3xl bg-gradient-to-br from-yellow-300 to-orange-400 flex-shrink-0">🧑‍💻</div>
+        <img src="/danselfie.jpg" alt="Dan McCarthy" class="w-12 h-12 rounded object-cover flex-shrink-0 border-2 border-white" />
         <span class="text-white font-bold text-[14px]" style="text-shadow:1px 1px 2px rgba(0,0,0,.4)">Dan McCarthy</span>
       </div>
 

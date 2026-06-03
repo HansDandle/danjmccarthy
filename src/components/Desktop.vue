@@ -1,35 +1,22 @@
 <template>
-  <!-- Desktop area -->
   <div
     class="w-screen overflow-hidden relative"
-    style="height: calc(100vh - 30px); background: linear-gradient(180deg,#3a8fd4 0%,#6abde8 30%,#82cfee 42%,#5db85c 42%,#3ea13e 55%,#2e8a2e 100%)"
+    style="height: calc(100vh - 30px)"
+    :style="{ backgroundImage: 'url(/bliss.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }"
     @click="startMenuOpen = false"
   >
-    <!-- Clouds -->
-    <div class="cloud c1" />
-    <div class="cloud c2" />
-    <div class="cloud c3" />
-
-    <!-- Left column: portfolio icons -->
-    <div class="absolute top-3 left-3 flex flex-col gap-3 z-10">
-      <DesktopIcon v-for="w in desktopWindows" :key="w.id"
-        :icon="w.icon" :label="w.title"
-        @dblclick="winStore.openWindow(w.id)"
-      />
-      <DesktopIcon icon="💼" label="LinkedIn" href="https://linkedin.com/in/danjmccarthy" />
-      <DesktopIcon icon="🐙" label="GitHub" href="https://github.com/HansDandle" />
-    </div>
-
-    <!-- Right column: project icons -->
-    <div class="absolute top-3 right-3 flex flex-col gap-3 z-10">
-      <DesktopIcon
-        v-for="p in PROJECTS"
-        :key="p.id"
-        :img-src="p.favicon"
-        :label="p.label"
-        :href="p.url"
-      />
-    </div>
+    <!-- Desktop icons (all draggable, absolutely positioned) -->
+    <DesktopIcon
+      v-for="ic in allIcons" :key="ic.id"
+      :icon="ic.icon"
+      :img-src="ic.imgSrc"
+      :label="ic.label"
+      :href="ic.href"
+      :tooltip="ic.tooltip"
+      :init-x="ic.x"
+      :init-y="ic.y"
+      @open="winStore.openWindow(ic.id)"
+    />
 
     <!-- Windows -->
     <XpWindow
@@ -47,7 +34,6 @@
     </XpWindow>
   </div>
 
-  <!-- Taskbar -->
   <Taskbar
     :open-windows="openWindows"
     :active-id="winStore.activeWindowId"
@@ -55,14 +41,12 @@
     @taskbar-click="onTaskbarClick"
   />
 
-  <!-- Start menu -->
   <StartMenu
     :open="startMenuOpen"
     @open="id => { winStore.openWindow(id); startMenuOpen = false }"
     @close="startMenuOpen = false"
   />
 
-  <!-- Overlay to close start menu -->
   <div v-if="startMenuOpen" class="fixed inset-0 z-[9997]" @click="startMenuOpen = false" />
 </template>
 
@@ -82,17 +66,56 @@ import Bio from './windows/Bio.vue'
 
 const winStore = useWindowsStore()
 const startMenuOpen = ref(false)
-
-const desktopWindows = WINDOWS.filter(w => w.onDesktop)
 const openWindows = computed(() => winStore.openWindows)
 
+// ── Icon grid layout helper ──────────────────────────────
+// Lays out icons in a 2-column grid starting from (startX, startY)
+const COL_W = 88   // icon width + gap
+const ROW_H = 90   // icon height + gap
+
+function gridPos(index, startX = 10, startY = 10, cols = 2) {
+  const col = index % cols
+  const row = Math.floor(index / cols)
+  return { x: startX + col * COL_W, y: startY + row * ROW_H }
+}
+
+// Portfolio windows (openable)
+const portfolioIcons = WINDOWS.filter(w => w.onDesktop).map((w, i) => ({
+  id: w.id,
+  icon: w.icon,
+  label: w.title,
+  ...gridPos(i),
+}))
+
+// Static link icons appended after portfolio windows
+const linkIcons = [
+  { id: 'linkedin', icon: '💼', label: 'LinkedIn', href: 'https://linkedin.com/in/danjmccarthy' },
+  { id: 'github',   icon: '🐙', label: 'GitHub',   href: 'https://github.com/HansDandle' },
+].map((ic, i) => ({
+  ...ic,
+  ...gridPos(portfolioIcons.length + i),
+}))
+
+// Project icons — continue the grid after portfolio icons
+const projectIcons = PROJECTS.map((p, i) => ({
+  id: p.id,
+  imgSrc: p.favicon,
+  label: p.label,
+  href: p.url,
+  tooltip: p.description,
+  ...gridPos(portfolioIcons.length + linkIcons.length + i),
+}))
+
+const allIcons = [...portfolioIcons, ...linkIcons, ...projectIcons]
+
+// ── Window plumbing ──────────────────────────────────────
 function winDef(id) {
   const w = WINDOWS.find(w => w.id === id)
   return {
     id: w.id, title: w.title, icon: w.icon,
     initX: w.initX, initY: w.initY,
     initW: w.initW, initH: w.initH,
-    minW: w.minW, minH: w.minH,
+    minW: w.minW,   minH: w.minH,
     resizable: w.resizable !== false,
   }
 }
@@ -107,28 +130,3 @@ function onTaskbarClick(id) {
   else winStore.setActive(id)
 }
 </script>
-
-<style scoped>
-.cloud {
-  position: absolute;
-  background: rgba(255,255,255,0.85);
-  border-radius: 50px;
-  filter: blur(2px);
-  pointer-events: none;
-}
-.cloud::before, .cloud::after {
-  content: '';
-  position: absolute;
-  background: inherit;
-  border-radius: 50%;
-}
-.c1 { width:120px; height:35px; top:8%; left:8%; }
-.c1::before { width:70px; height:55px; top:-30px; left:15px; }
-.c1::after  { width:50px; height:40px; top:-20px; left:55px; }
-.c2 { width:90px; height:28px; top:14%; left:55%; }
-.c2::before { width:55px; height:45px; top:-25px; left:10px; }
-.c2::after  { width:40px; height:32px; top:-16px; left:42px; }
-.c3 { width:70px; height:22px; top:6%; left:75%; }
-.c3::before { width:40px; height:35px; top:-20px; left:8px; }
-.c3::after  { width:30px; height:25px; top:-13px; left:32px; }
-</style>

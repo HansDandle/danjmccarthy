@@ -16,9 +16,9 @@
         <span class="text-white text-[11px] font-bold truncate" style="text-shadow: 1px 1px 0 #05127a">{{ title }}</span>
       </div>
       <div class="flex items-center gap-px">
-        <WinBtn icon="🗕" title="Minimize" @click.stop="$emit('minimize')" />
-        <WinBtn v-if="resizable !== false" icon="🗗" title="Maximize" @click.stop="toggleMaximize" />
-        <WinBtn icon="✕" title="Close" red @click.stop="$emit('close')" />
+        <WinBtn icon="🗕" title="Minimize" @click="$emit('minimize')" />
+        <WinBtn v-if="resizable !== false" icon="🗗" title="Maximize" @click="toggleMaximize" />
+        <WinBtn icon="✕" title="Close" red @click="$emit('close')" />
       </div>
     </div>
 
@@ -34,9 +34,9 @@
       <slot />
     </div>
 
-    <!-- Resize handles -->
+    <!-- Resize handles — right handle starts below title bar so it doesn't block buttons -->
     <template v-if="resizable !== false && !maximized">
-      <div class="absolute top-0 right-0 w-2 h-full cursor-ew-resize" @mousedown.stop="startResize('right')" />
+      <div class="absolute right-0 w-2 cursor-ew-resize" :style="{ top: (TITLE_H + MENU_H) + 'px', bottom: '8px' }" @mousedown.stop="startResize('right')" />
       <div class="absolute bottom-0 left-0 h-2 w-full cursor-ns-resize" @mousedown.stop="startResize('bottom')" />
       <div class="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize" @mousedown.stop="startResize('corner')" />
     </template>
