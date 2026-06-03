@@ -17,26 +17,35 @@
     <!-- Grid -->
     <div
       class="xp-inset"
-      :style="{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, 1fr)` }"
+      :style="{ display: 'grid', gridTemplateColumns: `repeat(${COLS}, ${cellSize}px)` }"
     >
       <button
         v-for="(cell, i) in cells"
         :key="i"
-        class="w-6 h-6 flex items-center justify-center text-xs font-bold cursor-default"
+        class="flex items-center justify-center font-bold cursor-default touch-manipulation"
+        :style="{ width: cellSize + 'px', height: cellSize + 'px', fontSize: (cellSize * 0.45) + 'px' }"
         :class="cellClass(cell)"
         @click="reveal(i)"
         @contextmenu.prevent="flag(i)"
+        @touchstart.passive="onTouchStart(i)"
+        @touchend="onTouchEnd"
+        @touchmove="onTouchEnd"
       >{{ cellLabel(cell) }}</button>
     </div>
 
-    <p class="text-[10px] text-[#444]">Left-click: reveal · Right-click: flag</p>
+    <p class="text-[10px] text-[#444]">Tap: reveal · Long-press: flag</p>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const ROWS = 9, COLS = 9, MINES = 10
+
+const containerW = ref(300)
+const cellSize = computed(() => Math.floor(Math.min(containerW.value - 16, window.innerHeight * 0.55) / COLS))
+function updateSize() { containerW.value = Math.min(window.innerWidth, 500) }
+onMounted(() => { updateSize(); window.addEventListener('resize', updateSize) })
 
 const cells = ref([])
 const gameState = ref('idle') // idle | playing | won | lost
@@ -155,7 +164,13 @@ function cellLabel(cell) {
 
 reset()
 
-onUnmounted(() => clearInterval(timerInterval))
+onUnmounted(() => { clearInterval(timerInterval); window.removeEventListener('resize', updateSize) })
+
+let longPressTimer = null
+function onTouchStart(i) {
+  longPressTimer = setTimeout(() => { flag(i); longPressTimer = null }, 500)
+}
+function onTouchEnd() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null } }
 </script>
 
 <style scoped>

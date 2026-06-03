@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-black text-[#00ff00] font-mono text-[12px] p-2 overflow-auto h-full flex flex-col"
+    class="bg-black text-[#00ff00] font-mono text-[11px] p-2 overflow-auto h-full flex flex-col overflow-x-hidden"
     @click="focusInput"
     ref="container"
   >

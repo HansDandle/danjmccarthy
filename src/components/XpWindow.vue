@@ -22,8 +22,8 @@
       </div>
     </div>
 
-    <!-- Menu bar -->
-    <div class="bg-[#ece9d8] border-b border-[#aca899] flex items-center px-1 gap-1 text-[11px] h-5">
+    <!-- Menu bar (hidden on mobile) -->
+    <div v-if="!mobile" class="bg-[#ece9d8] border-b border-[#aca899] flex items-center px-1 gap-1 text-[11px] h-5">
       <span class="px-1 hover:bg-[#316ac5] hover:text-white cursor-default rounded-sm">File</span>
       <span class="px-1 hover:bg-[#316ac5] hover:text-white cursor-default rounded-sm">View</span>
       <span class="px-1 hover:bg-[#316ac5] hover:text-white cursor-default rounded-sm">Help</span>
@@ -92,9 +92,9 @@ const style = computed(() => {
 })
 
 const contentStyle = computed(() => {
-  const totalChrome = TITLE_H + MENU_H
-  if (props.mobile || maximized.value) return { height: `calc(100vh - 30px - ${totalChrome}px)` }
-  return { height: `${h.value - totalChrome}px` }
+  const chrome = TITLE_H + (props.mobile ? 0 : MENU_H)
+  if (props.mobile || maximized.value) return { height: `calc(100vh - 30px - ${chrome}px)` }
+  return { height: `${h.value - chrome}px` }
 })
 
 function toggleMaximize() {
