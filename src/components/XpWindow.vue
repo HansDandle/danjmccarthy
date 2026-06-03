@@ -61,6 +61,7 @@ const props = defineProps({
   isActive: Boolean,
   minimized: Boolean,
   zIndex: Number,
+  mobile: Boolean,
 })
 
 const emit = defineEmits(['close', 'minimize', 'activate'])
@@ -76,7 +77,7 @@ const TITLE_H = 28
 const MENU_H = 20
 
 const style = computed(() => {
-  if (maximized.value) {
+  if (props.mobile || maximized.value) {
     return { left: 0, top: 0, width: '100vw', height: 'calc(100vh - 30px)', zIndex: props.zIndex }
   }
   return {
@@ -92,7 +93,7 @@ const style = computed(() => {
 
 const contentStyle = computed(() => {
   const totalChrome = TITLE_H + MENU_H
-  if (maximized.value) return { height: `calc(100vh - 30px - ${totalChrome}px)` }
+  if (props.mobile || maximized.value) return { height: `calc(100vh - 30px - ${totalChrome}px)` }
   return { height: `${h.value - totalChrome}px` }
 })
 

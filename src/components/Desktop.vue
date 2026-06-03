@@ -1,11 +1,27 @@
 <template>
   <div
-    class="w-screen overflow-hidden relative"
+    class="w-screen relative"
+    :class="isMobile ? 'overflow-y-auto' : 'overflow-hidden'"
     style="height: calc(100vh - 30px)"
     :style="{ backgroundImage: 'url(/bliss.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }"
     @click="startMenuOpen = false"
   >
-    <!-- Desktop icons (all draggable, absolutely positioned) -->
+    <!-- Mobile: scrollable icon grid -->
+    <div v-if="isMobile" class="grid gap-3 p-3" style="grid-template-columns: repeat(3, 1fr)">
+      <DesktopIcon
+        v-for="ic in allIcons" :key="ic.id"
+        :icon="ic.icon"
+        :img-src="ic.imgSrc"
+        :label="ic.label"
+        :href="ic.href"
+        :tooltip="ic.tooltip"
+        :mobile="true"
+        @open="winStore.openWindow(ic.id)"
+      />
+    </div>
+
+    <!-- Desktop icons (draggable, absolutely positioned) -->
+    <template v-else>
     <DesktopIcon
       v-for="ic in allIcons" :key="ic.id"
       :icon="ic.icon"
@@ -18,6 +34,8 @@
       @open="winStore.openWindow(ic.id)"
     />
 
+    </template>
+
     <!-- Windows -->
     <XpWindow
       v-for="w in openWindows"
@@ -26,6 +44,7 @@
       :is-active="w.id === winStore.activeWindowId"
       :minimized="w.minimized"
       :z-index="w.z"
+      :mobile="isMobile"
       @close="winStore.closeWindow(w.id)"
       @minimize="winStore.toggleMinimize(w.id)"
       @activate="winStore.setActive(w.id)"
@@ -51,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWindowsStore } from '../stores/windowsStore.js'
 import { WINDOWS } from '../data/windows.js'
 import { PROJECTS } from '../data/projects.js'
@@ -68,10 +87,15 @@ const winStore = useWindowsStore()
 const startMenuOpen = ref(false)
 const openWindows = computed(() => winStore.openWindows)
 
+const isMobile = ref(window.innerWidth < 768)
+function onResize() { isMobile.value = window.innerWidth < 768 }
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
+
 // ── Icon grid layout helper ──────────────────────────────
 // Lays out icons in a 2-column grid starting from (startX, startY)
-const COL_W = 88   // icon width + gap
-const ROW_H = 90   // icon height + gap
+const COL_W = 130  // icon width + gap
+const ROW_H = 110  // icon height + gap
 
 function gridPos(index, startX = 10, startY = 10, cols = 2) {
   const col = index % cols
