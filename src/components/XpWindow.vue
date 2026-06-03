@@ -1,7 +1,8 @@
 <template>
   <section
     v-show="!minimized"
-    class="absolute rounded-t-sm overflow-hidden select-none"
+    :class="mobile ? 'fixed' : 'absolute'"
+    class="rounded-t-sm overflow-hidden select-none"
     :style="style"
     @mousedown="onMouseDown"
   >
@@ -78,7 +79,7 @@ const MENU_H = 20
 
 const style = computed(() => {
   if (props.mobile || maximized.value) {
-    return { left: 0, top: 0, width: '100vw', height: 'calc(100vh - 30px)', zIndex: props.zIndex }
+    return { left: 0, top: 0, width: '100vw', height: 'calc(100vh - 30px)', zIndex: 9000 }
   }
   return {
     left: x.value + 'px',
