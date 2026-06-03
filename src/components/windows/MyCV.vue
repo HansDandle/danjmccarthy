@@ -22,7 +22,7 @@
     <!-- Summary -->
     <Section title="Professional Summary">
       <p class="text-[#333] leading-relaxed">
-        Customer-facing SaaS implementation and customer success professional with 8+ years of experience helping enterprise and mid-market customers adopt new technology platforms, optimize operational workflows, and navigate complex onboarding and rollout processes. Strong operational mindset with hands-on experience building AI-enabled SaaS products and workflow automations using LLM integrations, combined with a practical, data-curious approach to process improvement and customer enablement.
+        Customer-facing SaaS implementation and customer success professional with 8+ years of experience helping enterprise and mid-market customers adopt new technology, optimize workflows, and navigate complex onboarding and rollout processes. Skilled at translating technical concepts for non-technical stakeholders, managing concurrent implementation pipelines, and partnering cross-functionally across Sales, Product, Operations, and Support. Hands-on builder of AI-enabled SaaS products and LLM-powered automations, with a practical, data-curious approach to process improvement and customer enablement.
       </p>
     </Section>
 
@@ -112,7 +112,7 @@
 
     <!-- Download -->
     <div class="mt-4 pt-3 border-t border-[#ddd]">
-      <a href="/resume.pdf" target="_blank"
+      <a href="/danmccarthyresume.pdf" target="_blank"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#316ac5] text-white rounded hover:bg-[#2255a0] text-[11px]">
         ⬇ Download PDF Resume
       </a>
