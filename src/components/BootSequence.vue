@@ -1,20 +1,15 @@
 <template>
   <div class="w-screen h-screen overflow-hidden">
 
-    <!-- Step 1: plain black -->
-    <div v-if="step === 1" class="w-full h-full bg-black" />
+    <!-- Logo screen -->
+    <div v-if="step === 2" class="w-full h-full bg-black flex flex-col items-center justify-center relative select-none">
 
-    <!-- Step 2: logo screen -->
-    <div v-else-if="step === 2" class="w-full h-full bg-black flex flex-col items-center justify-center relative select-none">
-
-      <!-- Logo + name block -->
+      <!-- Logo + name + loading bar as one block -->
       <div class="flex flex-col items-center gap-2">
-        <!-- XP orb logo -->
         <img src="/winlogo.png" alt="Windows XP logo" class="w-44 h-44 object-contain" />
 
-        <!-- Name + title text -->
-        <div class="text-center mt-2">
-          <p class="text-white text-lg font-light tracking-wide"
+        <div class="text-left mt-2">
+          <p class="text-white text-2xl font-light tracking-wide"
             style="font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif">
             Dan McCarthy
           </p>
@@ -22,35 +17,13 @@
             Portfolio<span class="text-[#f26522] italic" style="font-size:.45em; vertical-align:super; font-weight:900">xp</span>
           </p>
         </div>
-      </div>
 
-      <!-- Loading bar pinned to bottom -->
-      <div class="absolute bottom-12 flex flex-col items-center gap-3">
-        <div class="loading-bar overflow-hidden rounded px-px py-px flex items-center gap-0.5" style="width:320px;height:26px">
+        <div class="loading-bar mt-4 overflow-hidden rounded px-px py-px flex items-center gap-0.5" style="width:320px;height:26px">
           <div class="loading-box h-5/6 w-4 flex-shrink-0" />
           <div class="loading-box h-5/6 w-4 flex-shrink-0" style="animation-delay:.18s" />
           <div class="loading-box h-5/6 w-4 flex-shrink-0" style="animation-delay:.36s" />
         </div>
       </div>
-    </div>
-
-    <!-- Step 3: XP blue "starting" screen -->
-    <div v-else-if="step === 3"
-      class="w-full h-full flex flex-col select-none"
-      style="background:radial-gradient(29.68% 27.76% at 5.94% 14.64%, rgba(255,255,255,.2) 0%, rgba(255,255,255,.16) 59.9%, rgba(255,255,255,0) 100%), #567DDA">
-      <div class="w-full h-32 flex-shrink-0" style="background:#012F9E; border-bottom:2px solid #fff" />
-      <div class="flex-1 flex items-center justify-center">
-        <div class="flex items-center gap-4 mb-10">
-          <img src="/winlogo.png" alt="Windows XP logo" class="w-20 h-20 object-contain" />
-          <div class="flex flex-col leading-none">
-            <span class="text-black font-light text-4xl tracking-wide"
-              style="font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif">Portfolio</span>
-            <span class="text-[#f26522] font-bold text-2xl italic"
-              style="font-family:'Franklin Gothic Medium','Arial Narrow',Arial,sans-serif">XP</span>
-          </div>
-        </div>
-      </div>
-      <div class="w-full h-48 flex-shrink-0" style="background:#012F9E; border-top:2px solid #13920D" />
     </div>
 
   </div>
@@ -63,11 +36,8 @@ const emit = defineEmits(['done'])
 const step = ref(1)
 
 onMounted(async () => {
-  await wait(1200)
   step.value = 2
-  await wait(5500)
-  step.value = 3
-  await wait(2000)
+  await wait(4500)
   emit('done')
 })
 
