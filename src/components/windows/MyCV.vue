@@ -86,7 +86,7 @@
         org="Scout Industries"
         period="2025 – Present"
         :bullets="[
-          'Built and launched ScratchScout, PourScout, and PriorScout — AI-enabled SaaS platforms using Next.js, Firebase, Vercel, Stripe, and LLM integrations',
+          'Built and launched ScratchScout, PourScout, and PriorScout - AI-enabled SaaS platforms using Next.js, Firebase, Vercel, Stripe, and LLM integrations',
           'Designed onboarding flows, workflow automations, and user enablement systems from the ground up',
         ]"
       />
@@ -95,7 +95,7 @@
         org="TriviATX"
         period="2019 – Present"
         :bullets="[
-          'Produce and host a weekly trivia event series in Austin — 100+ editions — managing venue coordination, scheduling, and live event operations independently',
+          'Produce and host a weekly trivia event series in Austin - 100+ editions - managing venue coordination, scheduling, and live event operations independently',
         ]"
       />
     </Section>

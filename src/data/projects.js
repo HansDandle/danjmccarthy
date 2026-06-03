@@ -27,7 +27,7 @@ export const PROJECTS = [
     label: 'Pound Town',
     url: 'https://poundtowntx.com',
     favicon: fav('poundtowntx.com'),
-    description: 'Celebrates the heritage of Dripping Springs, TX founders — history site + local merch.',
+    description: 'Celebrates the heritage of Dripping Springs, TX founders - history site + local merch.',
   },
   {
     id: 'crittergitter',
@@ -55,13 +55,13 @@ export const PROJECTS = [
     label: 'PriorScout',
     url: 'https://priorscout.vercel.app',
     favicon: fav('priorscout.vercel.app'),
-    description: 'Better IP & prior art searches — coming soon.',
+    description: 'Better IP & prior art searches - coming soon.',
   },
   {
     id: 'tedbrown',
     label: 'Ted Brown TX',
     url: 'https://tedbrown.org',
     favicon: fav('tedbrown.org'),
-    description: 'Libertarian candidate for U.S. Senate from Texas — campaign site.',
+    description: 'Libertarian candidate for U.S. Senate from Texas - campaign site.',
   },
 ]

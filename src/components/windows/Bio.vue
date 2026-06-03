@@ -1,6 +1,6 @@
 <template>
   <div class="h-full flex flex-col bg-white">
-    <!-- Notepad-style menu bar override (no File/View/Help — real notepad has its own) -->
+    <!-- Notepad-style menu bar override (no File/View/Help - real notepad has its own) -->
     <textarea
       readonly
       class="flex-1 w-full resize-none border-none outline-none p-2 font-mono text-[12px] leading-relaxed text-[#111] bg-white"
@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-const bio = `Dan McCarthy — bio.txt
+const bio = `Dan McCarthy - bio.txt
 ════════════════════════════════════════════════════════════════
 
 I'm a B2B sales and account management veteran turned indie
@@ -24,11 +24,11 @@ TriviATX, a weekly pub quiz now past its 100th edition.
 I call myself a code coxswain. I don't row, I steer. Claude
 handles the oars, and together we've shipped:
 
-  • Task Coop      — a worker-owned local services marketplace
+  • Task Coop      - a worker-owned local services marketplace
                      competing with TaskRabbit and Thumbtack
-  • StratScout     — a walk-forward quant trading system running
+  • StratScout     - a walk-forward quant trading system running
                      live in a real brokerage account
-  • ScratchScout   — a scratch-off lottery EV tracker
+  • ScratchScout   - a scratch-off lottery EV tracker
 
 Plus two dozen more repos across leads generation, patent
 search, senior connectivity, and whatever problem showed up next.
