@@ -117,7 +117,7 @@ const score = ref(0)
 const hasFired = ref(false)
 const targetsHit = ref(0)
 const allCleared = computed(() => targetsHit.value >= TARGET_DEFS.length && !modal.value)
-const gameOver = computed(() => birdsLeft.value === 0 && !allCleared.value && !modal.value && (!bird || !bird.alive) && !inFlight)
+const gameOver = ref(false)
 
 // ── Canvas state ─────────────────────────────────────────────────────────────
 let W = 800, H = 500
@@ -240,7 +240,8 @@ function tick() {
     bird.alive = false
     setTimeout(() => {
       if (birdsLeft.value > 0) resetBird()
-    }, 600)
+      else if (targetsHit.value < TARGET_DEFS.length) gameOver.value = true
+    }, 800)
     return
   }
 
@@ -619,6 +620,7 @@ function restart() {
   hasFired.value = false
   targetsHit.value = 0
   modal.value = null
+  gameOver.value = false
   inFlight = false
   buildTargets()
   resetBird()
