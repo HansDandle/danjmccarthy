@@ -12,14 +12,6 @@
       <IphoneFlavor  v-else-if="flavor === 'iphone'" />
       <MarioFlavor   v-else-if="flavor === 'mario'" />
 
-      <!-- Prominent back-to-picker button for non-XP flavors -->
-      <button
-        class="fixed bottom-6 right-4 z-[99999] flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-sm shadow-lg transition-all active:scale-95"
-        style="background:rgba(30,30,40,0.85);color:#fff;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.15)"
-        @click="reset"
-      >
-        ← Change Experience
-      </button>
     </template>
   </div>
 </template>
