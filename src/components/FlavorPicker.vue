@@ -41,7 +41,6 @@ const flavors = [
     emoji: '🖥️',
     bg: 'linear-gradient(135deg,#1e50c8 0%,#3a8fe8 100%)',
     border: '#316ac5',
-    tag: 'Nostalgic',
   },
   {
     id: 'normal',
@@ -50,7 +49,6 @@ const flavors = [
     emoji: '📄',
     bg: 'linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)',
     border: '#444',
-    tag: 'Professional',
   },
   {
     id: 'iphone',
@@ -59,21 +57,18 @@ const flavors = [
     emoji: '📱',
     bg: 'linear-gradient(135deg,#1c1c1e 0%,#2c2c2e 100%)',
     border: '#3a3a3c',
-    tag: 'Sleek',
   },
   {
     id: 'mario',
-    name: 'Mario World',
-    desc: 'Auto-playing adventure',
-    emoji: '🍄',
-    bg: 'linear-gradient(135deg,#5c94fc 0%,#3a6fd8 100%)',
+    name: 'Slingshot',
+    desc: 'Launch birds at my portfolio',
+    emoji: '🐦',
+    bg: 'linear-gradient(135deg,#87ceeb 0%,#5ca8e8 100%)',
     border: '#e52521',
-    tag: '🔥 New',
   },
 ]
 
 function pick(id) {
-  localStorage.setItem('portfolio-flavor', id)
   emit('pick', id)
 }
 
@@ -93,12 +88,6 @@ const FlavorCard = defineComponent({
       onMouseleave: () => emit('mouseleave'),
       onClick: () => emit('click'),
     }, [
-      h('div', { class: 'absolute top-2 right-2' },
-        h('span', {
-          class: 'text-[10px] px-1.5 py-0.5 rounded-full font-bold',
-          style: { background: 'rgba(255,255,255,0.15)', color: '#fff' }
-        }, props.flavor.tag)
-      ),
       h('span', { style: { fontSize: '2.5rem', lineHeight: 1 } }, props.flavor.emoji),
       h('div', [
         h('div', { class: 'text-white font-bold text-sm' }, props.flavor.name),

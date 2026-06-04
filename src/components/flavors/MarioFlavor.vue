@@ -1,633 +1,585 @@
 <template>
-  <div class="w-screen h-screen overflow-hidden relative" style="background:#5c94fc; image-rendering:pixelated">
-    <canvas ref="canvas" class="absolute inset-0" :width="W" :height="H" style="width:100%;height:100%;image-rendering:pixelated" />
+  <div ref="container" class="w-screen h-screen overflow-hidden relative touch-none select-none"
+    style="background:linear-gradient(180deg,#87ceeb 0%,#b0e0f5 60%,#87ceeb 100%)">
+    <canvas ref="canvas" class="absolute inset-0 w-full h-full" />
 
-    <!-- Resume popup -->
-    <Transition name="popup">
-      <div v-if="showResume" class="absolute inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.6)">
-        <div class="bg-white rounded-2xl overflow-hidden w-full max-w-lg" style="max-height:80vh">
-          <div class="flex items-center justify-between px-4 py-3 border-b border-[#eee]">
-            <span class="font-bold text-sm">📄 resume.txt</span>
-            <button class="text-sm px-3 py-1 bg-[#e52521] text-white rounded font-bold" @click="showResume = false">Close ×</button>
+    <!-- Content modals -->
+    <Transition name="pop">
+      <div v-if="modal" class="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-6"
+        style="background:rgba(0,0,0,0.55)">
+        <div class="bg-white rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl"
+          :style="{ maxHeight: isMobile ? '88vh' : '80vh' }">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-[#eee] flex-shrink-0">
+            <span class="font-bold text-sm">{{ modal.title }}</span>
+            <button class="px-3 py-1 bg-[#e55] text-white rounded text-sm font-bold" @click="modal = null">✕</button>
           </div>
-          <div class="overflow-y-auto" style="max-height:calc(80vh - 52px)">
-            <MyCV />
+          <div class="overflow-y-auto" :style="{ maxHeight: isMobile ? 'calc(88vh - 52px)' : 'calc(80vh - 52px)' }">
+            <!-- CV -->
+            <MyCV v-if="modal.type === 'cv'" />
+            <!-- Bio -->
+            <Bio v-else-if="modal.type === 'bio'" />
+            <!-- Projects -->
+            <div v-else class="p-4 grid grid-cols-2 gap-3">
+              <a v-for="p in projects" :key="p.id" :href="p.url" target="_blank" rel="noopener"
+                class="flex items-center gap-3 p-3 rounded-xl border border-[#eee] no-underline text-inherit hover:border-[#aaa] transition-colors">
+                <img :src="p.favicon" class="w-8 h-8 object-contain rounded flex-shrink-0"
+                  @error="e => e.target.style.display='none'" />
+                <div>
+                  <div class="font-semibold text-[12px]">{{ p.label }}</div>
+                  <div class="text-[#888] text-[10px] mt-0.5 leading-snug line-clamp-2">{{ p.description }}</div>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </Transition>
 
-    <!-- Bio popup (Toad dialog) -->
-    <Transition name="popup">
-      <div v-if="showBio" class="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 w-[min(420px,90vw)]">
-        <div class="bg-white border-4 border-[#333] rounded-lg p-4 shadow-2xl relative" style="font-family:'Courier New',monospace">
-          <div class="absolute -top-8 left-4 text-3xl">🍄</div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-bold text-sm text-[#e52521]">TOAD</span>
-            <span class="text-[10px] text-[#888]">NPC · Mushroom Kingdom, Austin TX</span>
-          </div>
-          <p class="text-[12px] leading-relaxed text-[#333]">{{ bioLines[bioPage] }}</p>
-          <div class="flex justify-between items-center mt-3">
-            <span class="text-[10px] text-[#aaa]">{{ bioPage + 1 }} / {{ bioLines.length }}</span>
-            <button class="text-[11px] px-3 py-1 bg-[#e52521] text-white rounded font-bold" @click="nextBio">
-              {{ bioPage < bioLines.length - 1 ? 'Next ▶' : 'Thanks! ✕' }}
-            </button>
+    <!-- Win screen -->
+    <Transition name="pop">
+      <div v-if="allCleared" class="absolute inset-0 z-40 flex flex-col items-center justify-center"
+        style="background:rgba(0,0,0,0.5)">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl mx-4">
+          <div class="text-5xl mb-3">🎉</div>
+          <h2 class="text-2xl font-bold mb-2">You found everything!</h2>
+          <p class="text-[#666] text-sm mb-6">Dan McCarthy · Austin, TX</p>
+          <div class="flex flex-col gap-2">
+            <a href="mailto:danshandle@gmail.com"
+              class="px-5 py-2 bg-black text-white rounded-lg text-sm font-medium no-underline">Get in touch</a>
+            <button class="px-5 py-2 border border-[#ddd] rounded-lg text-sm" @click="restart">Play again</button>
           </div>
         </div>
       </div>
     </Transition>
 
-    <!-- World select -->
-    <Transition name="warp">
-      <div v-if="showWorldSelect" class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6"
-        style="background:linear-gradient(180deg,#000 0%,#1a0a2e 100%)">
-        <h2 class="text-white font-bold text-2xl mb-2" style="font-family:'Courier New',monospace;text-shadow:0 0 20px #fff">- WORLD SELECT -</h2>
-        <p class="text-[#aaa] text-sm mb-8" style="font-family:'Courier New',monospace">Choose a project to explore</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full max-w-xl">
-          <a
-            v-for="(p, i) in projects" :key="p.id"
-            :href="p.url" target="_blank" rel="noopener"
-            class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-[#444] hover:border-[#ffcc00] transition-colors no-underline text-white cursor-pointer"
-            style="background:rgba(255,255,255,0.05)"
-          >
-            <div class="text-lg font-bold" style="font-family:'Courier New',monospace;color:#ffcc00">{{ `WORLD ${i+1}-1` }}</div>
-            <img :src="p.favicon" :alt="p.label" class="w-10 h-10 object-contain rounded" @error="e => e.target.style.display='none'" />
-            <span class="text-[11px] text-center leading-tight">{{ p.label }}</span>
-          </a>
-        </div>
-        <button class="mt-8 text-[#888] text-sm hover:text-white transition-colors" style="font-family:'Courier New',monospace" @click="restartMario">↩ Play Again</button>
-      </div>
-    </Transition>
+    <!-- Ammo counter -->
+    <div class="absolute top-3 left-3 z-10 flex gap-1.5 items-center">
+      <span v-for="i in totalBirds" :key="i"
+        class="inline-block rounded-full border-2 border-[rgba(0,0,0,0.2)]"
+        :style="{ width:'18px', height:'18px', background: i <= birdsLeft ? '#e52521' : 'rgba(0,0,0,0.15)' }" />
+    </div>
+
+    <!-- Score -->
+    <div class="absolute top-3 right-3 z-10 font-bold text-white text-sm"
+      style="text-shadow:1px 1px 3px rgba(0,0,0,0.5)">{{ score.toLocaleString() }}</div>
+
+    <!-- Aim hint -->
+    <div v-if="!hasFired && !modal" class="absolute bottom-4 left-0 right-0 text-center z-10
+      text-white text-xs font-medium pointer-events-none"
+      style="text-shadow:1px 1px 3px rgba(0,0,0,0.6)">
+      Pull back on the bird to launch
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import MyCV from '../windows/MyCV.vue'
+import Bio from '../windows/Bio.vue'
 import { PROJECTS } from '../../data/projects.js'
 
 const projects = PROJECTS
+const container = ref(null)
 const canvas = ref(null)
-const showResume = ref(false)
-const showBio = ref(false)
-const showWorldSelect = ref(false)
-const bioPage = ref(0)
+const modal = ref(null)
+const isMobile = ref(window.innerWidth < 768)
 
-const bioLines = [
-  "It's-a me, TOAD! Welcome to Dan McCarthy's portfolio!",
-  "Dan's a B2B SaaS veteran - 8 years of enterprise onboarding, customer success, and getting people to actually use software.",
-  "He also runs Scout Industries - a portfolio of indie SaaS products he built with AI tooling. Real products, real users.",
-  "He hosts TriviATX - Austin's best pub quiz, 100+ editions and counting. Ask him anything.",
-  "Code coxswain: he doesn't row, he steers. Claude handles the oars. But knowing where to go? That's all Dan.",
-]
+// ── Game config ─────────────────────────────────────────────────────────────
+const totalBirds = 6
+const birdsLeft = ref(totalBirds)
+const score = ref(0)
+const hasFired = ref(false)
+const targetsHit = ref(0)
+const allCleared = computed(() => targetsHit.value >= TARGET_DEFS.length && !modal.value)
 
-function nextBio() {
-  if (bioPage.value < bioLines.length - 1) { bioPage.value++; return }
-  showBio.value = false
-  // resume game after Toad
-  if (gameState) gameState.phase = 'WALK_PIPE'
-}
-
-// ── Canvas game ───────────────────────────────────────────────────────────────
-
-const W = 800, H = 300
-const GROUND = H - 48
-
-// Colors
-const C = {
-  sky: '#5c94fc',
-  cloud: '#fff',
-  ground: '#c84b0c',
-  groundTop: '#59b135',
-  brick: '#b56010',
-  brickHL: '#d47820',
-  qBlock: '#e8a000',
-  qBlockHL: '#ffd000',
-  mario: '#e52521',
-  marioSkin: '#ffd0a0',
-  goomba: '#a05000',
-  pipe: '#00a000',
-  pipeDark: '#007000',
-  toad: '#fff',
-  toadSpot: '#e52521',
-  star: '#ffff00',
-  text: '#fff',
-}
-
+// ── Canvas state ─────────────────────────────────────────────────────────────
+let W = 800, H = 500
 let ctx = null
 let animId = null
-let gameState = null
+let dpr = 1
 
-const SCROLL_SPEED = 1.8
+// Slingshot
+const SL = { x: 0, y: 0, forkW: 22, forkH: 60, trunkH: 80 }
 
-// Mario sprite (simple pixel-art using rects)
-function drawMario(c, x, y, frame, dead = false) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  if (dead) {
-    // Spinning dead mario
-    c.save()
-    c.translate(sx + 8, sy + 12)
-    c.rotate(frame * 0.3)
-    c.fillStyle = C.mario
-    c.fillRect(-8, -8, 16, 10)
-    c.fillStyle = C.marioSkin
-    c.fillRect(-4, -14, 8, 8)
-    c.restore()
+// Bird
+let bird = null
+let dragging = false
+let dragPos = { x: 0, y: 0 }
+let inFlight = false
+let trail = []
+
+// Targets — defined as fractions, resolved after resize
+const TARGET_DEFS = [
+  { key: 'cv',       label: '📄 Resume',  type: 'cv',       fx: 0.48, fy: 0.55, fw: 0.14, fh: 0.10, color: '#316ac5', textColor: '#fff', pts: 1000 },
+  { key: 'bio',      label: '👤 About',   type: 'bio',      fx: 0.65, fy: 0.45, fw: 0.13, fh: 0.10, color: '#34a853', textColor: '#fff', pts: 1500 },
+  { key: 'projects', label: '🚀 Projects',type: 'projects', fx: 0.82, fy: 0.35, fw: 0.14, fh: 0.10, color: '#e8a000', textColor: '#fff', pts: 2000 },
+]
+
+let targets = []
+
+function buildTargets() {
+  targets = TARGET_DEFS.map(d => ({
+    ...d,
+    x: d.fx * W,
+    y: d.fy * H,
+    w: d.fw * W,
+    h: d.fh * H,
+    hit: false,
+    cracks: [],
+    shakeX: 0,
+    hitFrame: 0,
+  }))
+}
+
+function buildSlingshot() {
+  SL.x = W * 0.18
+  SL.y = H * 0.78
+  SL.forkW = Math.max(16, W * 0.028)
+  SL.forkH = Math.max(40, H * 0.12)
+  SL.trunkH = Math.max(50, H * 0.16)
+}
+
+function resetBird() {
+  bird = {
+    x: SL.x,
+    y: SL.y - SL.forkH * 0.7,
+    vx: 0,
+    vy: 0,
+    r: Math.max(12, W * 0.022),
+    alive: true,
+  }
+  inFlight = false
+  dragging = false
+  trail = []
+}
+
+// ── Physics ──────────────────────────────────────────────────────────────────
+const GRAVITY = 0.35
+const PULL_RADIUS = Math.min(W, H) * 0.1
+
+function getPullRadius() { return Math.min(W, H) * 0.22 }
+
+function clampPull(px, py) {
+  const r = getPullRadius()
+  const dx = px - SL.x, dy = py - (SL.y - SL.forkH * 0.7)
+  const dist = Math.hypot(dx, dy)
+  if (dist <= r) return { x: px, y: py }
+  return { x: SL.x + dx / dist * r, y: SL.y - SL.forkH * 0.7 + dy / dist * r }
+}
+
+function firebird() {
+  if (!bird || inFlight) return
+  const cx = SL.x, cy = SL.y - SL.forkH * 0.7
+  const dx = cx - dragPos.x, dy = cy - dragPos.y
+  const power = 0.28
+  bird.vx = dx * power
+  bird.vy = dy * power
+  inFlight = true
+  dragging = false
+  hasFired.value = true
+  birdsLeft.value--
+}
+
+function trajectory(steps = 40) {
+  if (!dragging) return []
+  const cx = SL.x, cy = SL.y - SL.forkH * 0.7
+  const dx = cx - dragPos.x, dy = cy - dragPos.y
+  const power = 0.28
+  let vx = dx * power, vy = dy * power
+  let x = bird.x, y = bird.y
+  const pts = []
+  for (let i = 0; i < steps; i++) {
+    x += vx; y += vy; vy += GRAVITY
+    if (y > H + 50) break
+    pts.push({ x, y })
+  }
+  return pts
+}
+
+// ── Game tick ─────────────────────────────────────────────────────────────────
+function tick() {
+  if (!bird || !inFlight || !bird.alive) return
+
+  bird.x += bird.vx
+  bird.y += bird.vy
+  bird.vy += GRAVITY
+
+  trail.push({ x: bird.x, y: bird.y })
+  if (trail.length > 18) trail.shift()
+
+  // Hit ground
+  if (bird.y > H + bird.r * 2) {
+    bird.alive = false
+    setTimeout(() => {
+      if (birdsLeft.value > 0) resetBird()
+    }, 600)
     return
   }
-  // Body
-  c.fillStyle = C.mario
-  c.fillRect(sx, sy + 10, 16, 10) // shirt
-  c.fillRect(sx + 2, sy + 20, 12, 4) // pants top
-  // Legs (walking animation)
-  const legOffset = Math.sin(frame * 0.4) * 3
-  c.fillRect(sx + 2, sy + 24, 5, 4 + legOffset) // left leg
-  c.fillRect(sx + 9, sy + 24, 5, 4 - legOffset) // right leg
-  // Shoes
-  c.fillStyle = '#5c3a00'
-  c.fillRect(sx, sy + 28 + legOffset, 7, 3)
-  c.fillRect(sx + 9, sy + 28 - legOffset, 7, 3)
-  // Head
-  c.fillStyle = C.marioSkin
-  c.fillRect(sx + 2, sy + 2, 12, 10)
-  // Hat
-  c.fillStyle = C.mario
-  c.fillRect(sx + 1, sy, 14, 5)
-  c.fillRect(sx, sy + 3, 16, 3)
-  // Eyes
-  c.fillStyle = '#000'
-  c.fillRect(sx + 10, sy + 4, 2, 2)
-  // Mustache
-  c.fillStyle = '#5c3a00'
-  c.fillRect(sx + 7, sy + 8, 8, 2)
-  // Overalls
-  c.fillStyle = '#003cff'
-  c.fillRect(sx + 3, sy + 14, 10, 6)
-}
 
-function drawGoomba(c, x, y, frame, squished = false) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  if (squished) {
-    c.fillStyle = C.goomba
-    c.fillRect(sx, sy + 22, 20, 6)
-    c.fillStyle = '#000'
-    c.fillRect(sx + 2, sy + 24, 4, 2)
-    c.fillRect(sx + 14, sy + 24, 4, 2)
-    return
-  }
-  // Body
-  c.fillStyle = C.goomba
-  c.fillRect(sx + 2, sy + 8, 16, 14)
-  // Head
-  c.fillRect(sx, sy, 20, 12)
-  // Feet (walking)
-  const legOff = Math.sin(frame * 0.35) * 2
-  c.fillStyle = '#7a3800'
-  c.fillRect(sx + 1, sy + 22, 7, 6 + legOff)
-  c.fillRect(sx + 12, sy + 22, 7, 6 - legOff)
-  // Eyes
-  c.fillStyle = '#fff'
-  c.fillRect(sx + 3, sy + 3, 5, 5)
-  c.fillRect(sx + 12, sy + 3, 5, 5)
-  c.fillStyle = '#000'
-  c.fillRect(sx + 5, sy + 4, 2, 3)
-  c.fillRect(sx + 14, sy + 4, 2, 3)
-  // Angry brows
-  c.fillStyle = '#000'
-  c.fillRect(sx + 2, sy + 2, 7, 2)
-  c.fillRect(sx + 11, sy + 2, 7, 2)
-  c.fillRect(sx + 2, sy + 1, 3, 2)
-  c.fillRect(sx + 15, sy + 1, 3, 2)
-}
-
-function drawBrick(c, x, y, broken = false) {
-  if (broken) return
-  const sx = Math.floor(x), sy = Math.floor(y)
-  c.fillStyle = C.brick
-  c.fillRect(sx, sy, 32, 32)
-  c.fillStyle = C.brickHL
-  c.fillRect(sx + 1, sy + 1, 14, 6)
-  c.fillRect(sx + 17, sy + 1, 14, 6)
-  c.fillRect(sx + 1, sy + 9, 30, 1)
-  c.fillRect(sx + 9, sy + 10, 14, 6)
-  c.fillRect(sx + 1, sy + 17, 6, 6)
-  c.fillRect(sx + 25, sy + 17, 6, 6)
-  c.fillRect(sx + 1, sy + 25, 30, 1)
-  c.fillRect(sx + 1, sy + 26, 14, 5)
-  c.fillRect(sx + 17, sy + 26, 14, 5)
-}
-
-function drawQBlock(c, x, y, hit = false) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  c.fillStyle = hit ? '#888' : C.qBlock
-  c.fillRect(sx, sy, 32, 32)
-  if (!hit) {
-    c.fillStyle = C.qBlockHL
-    c.fillRect(sx + 2, sy + 2, 28, 4)
-    c.fillRect(sx + 2, sy + 2, 4, 28)
-    // ? mark
-    c.fillStyle = '#fff'
-    c.fillRect(sx + 12, sy + 6, 8, 4)
-    c.fillRect(sx + 16, sy + 10, 4, 6)
-    c.fillRect(sx + 12, sy + 18, 8, 4)
-    c.fillRect(sx + 12, sy + 24, 8, 4)
-  } else {
-    c.fillStyle = '#666'
-    c.fillRect(sx + 2, sy + 2, 28, 4)
-    c.fillRect(sx + 2, sy + 2, 4, 28)
-  }
-}
-
-function drawPipe(c, x, y, h = 80) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  c.fillStyle = C.pipe
-  c.fillRect(sx + 4, sy + 16, 48, h)
-  c.fillStyle = C.pipeDark
-  c.fillRect(sx + 4, sy + 16, 8, h) // shadow left
-  c.fillRect(sx + 40, sy + 16, 12, h) // shadow right
-  // Pipe head
-  c.fillStyle = C.pipe
-  c.fillRect(sx, sy, 56, 20)
-  c.fillStyle = C.pipeDark
-  c.fillRect(sx, sy, 10, 20)
-  c.fillRect(sx + 46, sy, 10, 20)
-  c.fillRect(sx, sy, 56, 6)
-}
-
-function drawToad(c, x, y) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  // Body white
-  c.fillStyle = '#fff'
-  c.fillRect(sx + 2, sy + 12, 16, 14)
-  // Head
-  c.fillRect(sx, sy, 20, 14)
-  // Vest
-  c.fillStyle = '#3050c0'
-  c.fillRect(sx + 4, sy + 14, 12, 12)
-  // Mushroom cap
-  c.fillStyle = '#fff'
-  c.fillRect(sx - 4, sy - 10, 28, 14)
-  c.fillStyle = C.toadSpot
-  c.fillRect(sx - 2, sy - 8, 8, 8)
-  c.fillRect(sx + 14, sy - 8, 8, 8)
-  c.fillRect(sx + 6, sy - 4, 8, 4)
-  // Eyes
-  c.fillStyle = '#000'
-  c.fillRect(sx + 3, sy + 4, 4, 4)
-  c.fillRect(sx + 13, sy + 4, 4, 4)
-  c.fillStyle = '#fff'
-  c.fillRect(sx + 4, sy + 4, 2, 2)
-  c.fillRect(sx + 14, sy + 4, 2, 2)
-}
-
-function drawCloud(c, x, y) {
-  const sx = Math.floor(x), sy = Math.floor(y)
-  c.fillStyle = C.cloud
-  c.fillRect(sx + 8, sy + 8, 32, 16)
-  c.fillRect(sx, sy + 16, 48, 12)
-  c.fillRect(sx + 4, sy + 8, 16, 8)
-  c.fillRect(sx + 28, sy + 8, 12, 8)
-  c.fillRect(sx + 16, sy + 2, 16, 12)
-}
-
-function drawGround(c, scrollX) {
-  // Ground strip
-  c.fillStyle = C.groundTop
-  c.fillRect(0, GROUND, W, 8)
-  c.fillStyle = C.ground
-  c.fillRect(0, GROUND + 8, W, H - GROUND - 8)
-  // Ground pattern tiles
-  c.fillStyle = '#a03808'
-  for (let tx = (-(scrollX % 32) + 32) % 32 - 32; tx < W + 32; tx += 32) {
-    c.fillRect(tx, GROUND + 8, 1, H - GROUND - 8)
-    c.fillRect(tx + 16, GROUND + 8, 1, H - GROUND - 8)
-  }
-}
-
-function drawHUD(c, score, coins) {
-  c.fillStyle = '#fff'
-  c.font = 'bold 14px "Courier New"'
-  c.fillText(`MARIO`, 20, 20)
-  c.fillText(String(score).padStart(6, '0'), 20, 36)
-  c.fillText(`🪙 x${String(coins).padStart(2, '0')}`, W / 2 - 30, 28)
-  c.fillText(`WORLD`, W - 100, 20)
-  c.fillText(`  1-1`, W - 100, 36)
-}
-
-// ── Game state machine ─────────────────────────────────────────────────────
-
-function createState() {
-  return {
-    frame: 0,
-    scrollX: 0,
-    phase: 'WALK_GOOMBA', // phases: WALK_GOOMBA, JUMP_GOOMBA, SQUISH_PAUSE, WALK_BRICK, JUMP_BRICK, RESUME_PAUSE, WALK_TOAD, TOAD_TALK, WALK_PIPE, PIPE_ENTER, DONE
-    score: 0,
-    coins: 0,
-
-    mario: { x: 60, y: GROUND - 32, vy: 0, onGround: true },
-
-    goomba: { x: 340, y: GROUND - 28, alive: true, squished: false, squishTimer: 0 },
-
-    // blocks at world x-coords (relative to scroll)
-    brickX: 520,
-    brickBroken: false,
-    brickBumpY: 0,
-    brickBumpDir: 0,
-
-    qBlockX: 556,
-    qBlockHit: false,
-    qBlockBumpY: 0,
-
-    // flying resume item
-    resumeItem: null, // { x, y, vy }
-
-    toadX: 720,
-
-    pipeX: 920,
-
-    // clouds (parallax)
-    clouds: [
-      { x: 80, y: 40 },
-      { x: 240, y: 60 },
-      { x: 440, y: 30 },
-      { x: 600, y: 55 },
-    ],
-
-    phaseTimer: 0,
-    // jumpQueued is internal timing
-    _jumpDone: false,
-  }
-}
-
-function tick(s) {
-  s.frame++
-  s.phaseTimer++
-
-  const MARIO_SCREEN_X = 80 // mario stays ~here on screen
-
-  // ── Physics ──
-  const m = s.mario
-  if (!m.onGround) {
-    m.vy += 0.55
-    m.y += m.vy
-    if (m.y >= GROUND - 32) {
-      m.y = GROUND - 32
-      m.vy = 0
-      m.onGround = true
+  // Check target collisions
+  for (const t of targets) {
+    if (t.hit) continue
+    if (bird.x + bird.r > t.x && bird.x - bird.r < t.x + t.w &&
+        bird.y + bird.r > t.y && bird.y - bird.r < t.y + t.h) {
+      t.hit = true
+      t.hitFrame = 0
+      score.value += t.pts
+      targetsHit.value++
+      // Generate crack lines
+      t.cracks = Array.from({ length: 6 }, () => ({
+        x1: t.x + Math.random() * t.w,
+        y1: t.y + Math.random() * t.h,
+        x2: t.x + Math.random() * t.w,
+        y2: t.y + Math.random() * t.h,
+      }))
+      bird.alive = false
+      setTimeout(() => {
+        modal.value = { title: t.label, type: t.type }
+        if (birdsLeft.value > 0 && !targets.every(x => x.hit)) resetBird()
+      }, 400)
+      return
     }
   }
-
-  // ── Goomba ──
-  const g = s.goomba
-  if (g.squished) {
-    g.squishTimer++
-    if (g.squishTimer > 40) g.alive = false
-  }
-
-  // ── Brick bump ──
-  if (s.brickBumpDir !== 0) {
-    s.brickBumpY += s.brickBumpDir * 4
-    if (Math.abs(s.brickBumpY) >= 12) s.brickBumpDir *= -1
-    if (s.brickBumpDir === 1 && s.brickBumpY >= 0) { s.brickBumpY = 0; s.brickBumpDir = 0 }
-  }
-  if (s.qBlockBumpY !== 0) {
-    // similar for q block but we track it separately
-    s.qBlockBumpY += s.qBlockBumpDir * 4
-    if (Math.abs(s.qBlockBumpY) >= 12) s.qBlockBumpDir *= -1
-    if (s.qBlockBumpDir === 1 && s.qBlockBumpY >= 0) { s.qBlockBumpY = 0; s.qBlockBumpDir = 0 }
-  }
-
-  // ── Resume item falling ──
-  if (s.resumeItem) {
-    s.resumeItem.vy += 0.4
-    s.resumeItem.y += s.resumeItem.vy
-    if (s.resumeItem.y > GROUND - 24) {
-      s.resumeItem.y = GROUND - 24
-      s.resumeItem.vy = 0
-    }
-  }
-
-  // ── Scroll: keep mario near MARIO_SCREEN_X ──
-  const targetScrollX = m.x - MARIO_SCREEN_X
-  s.scrollX += (targetScrollX - s.scrollX) * 0.12
-
-  // ── Phase logic ──
-  switch (s.phase) {
-
-    case 'WALK_GOOMBA':
-      m.x += SCROLL_SPEED
-      // Jump when close to goomba (screen space)
-      if (g.alive && m.x + 30 >= g.x - 60 && !s._jumpDone) {
-        s._jumpDone = true
-        m.vy = -11
-        m.onGround = false
-      }
-      // Check stomp
-      if (g.alive && !g.squished && m.x + 12 >= g.x && m.x < g.x + 20 && m.y + 32 >= g.y && m.vy > 0) {
-        g.squished = true
-        g.squishTimer = 0
-        m.vy = -6
-        s.score += 100
-        s.phase = 'SQUISH_PAUSE'
-        s.phaseTimer = 0
-      }
-      break
-
-    case 'SQUISH_PAUSE':
-      m.x += SCROLL_SPEED * 0.5
-      if (s.phaseTimer > 30) { s.phase = 'WALK_BRICK'; s._jumpDone = false; s.phaseTimer = 0 }
-      break
-
-    case 'WALK_BRICK': {
-      m.x += SCROLL_SPEED
-      const brickScreenX = s.brickX - s.scrollX
-      if (!s.brickBroken && m.x + 8 >= s.brickX - 20 && !s._jumpDone) {
-        s._jumpDone = true
-        m.vy = -11
-        m.onGround = false
-      }
-      // Check if mario head hits brick from below
-      if (!s.brickBroken && !m.onGround && m.vy < 0
-        && m.x + 4 < s.brickX + 32 && m.x + 28 > s.brickX
-        && m.y <= GROUND - 32 - 100 && m.y >= GROUND - 32 - 110) {
-        s.brickBroken = true
-        s.brickBumpDir = -1
-        s.score += 50
-        // launch resume item from q-block
-      }
-      // After breaking, check q-block
-      if (s.brickBroken && !s.qBlockHit && m.x + 8 >= s.qBlockX - 20 && !s._jumpDone) {
-        s._jumpDone = false // reset for q block
-        m.vy = -11
-        m.onGround = false
-        s._jumpDone = true
-      }
-      if (!s.qBlockHit && !m.onGround && m.vy < 0
-        && m.x + 4 < s.qBlockX + 32 && m.x + 28 > s.qBlockX
-        && m.y <= GROUND - 32 - 100 && m.y >= GROUND - 32 - 115) {
-        s.qBlockHit = true
-        s.qBlockBumpDir = -1
-        s.qBlockBumpY = 0
-        s.score += 200
-        s.coins++
-        // Spawn resume item
-        s.resumeItem = { x: s.qBlockX + 6, y: GROUND - 32 - 132, vy: -3 }
-        s.phase = 'RESUME_PAUSE'
-        s.phaseTimer = 0
-      }
-      break
-    }
-
-    case 'RESUME_PAUSE':
-      m.x += SCROLL_SPEED * 0.3
-      if (s.phaseTimer > 90) {
-        s.phase = 'WALK_TOAD'
-        s._jumpDone = false
-        s.phaseTimer = 0
-        showResume.value = true
-      }
-      break
-
-    case 'WALK_TOAD':
-      if (showResume.value) { m.x += 0; break } // paused while resume open
-      m.x += SCROLL_SPEED
-      if (m.x + 20 >= s.toadX - 30) {
-        s.phase = 'TOAD_TALK'
-        s.phaseTimer = 0
-        showBio.value = true
-        bioPage.value = 0
-      }
-      break
-
-    case 'TOAD_TALK':
-      // wait for bio to close (nextBio sets phase to WALK_PIPE)
-      break
-
-    case 'WALK_PIPE':
-      if (showBio.value) break
-      m.x += SCROLL_SPEED
-      if (m.x + 16 >= s.pipeX + 4) {
-        s.phase = 'PIPE_ENTER'
-        s.phaseTimer = 0
-      }
-      break
-
-    case 'PIPE_ENTER':
-      m.y += 2.5
-      s.phaseTimer++
-      if (s.phaseTimer > 50) {
-        s.phase = 'DONE'
-        showWorldSelect.value = true
-      }
-      break
-  }
-
-  // Cloud parallax
-  for (const cl of s.clouds) {
-    cl.x -= 0.3
-    if (cl.x + 48 < 0) cl.x = W + 40
-  }
 }
 
-function render(s) {
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
   if (!ctx) return
   const c = ctx
+  c.save()
+  c.scale(dpr, dpr)
   c.clearRect(0, 0, W, H)
 
-  // Sky
-  c.fillStyle = C.sky
+  // Sky gradient
+  const sky = c.createLinearGradient(0, 0, 0, H)
+  sky.addColorStop(0, '#5ca8e8')
+  sky.addColorStop(0.6, '#a8d8f0')
+  sky.addColorStop(1, '#c8e8c0')
+  c.fillStyle = sky
   c.fillRect(0, 0, W, H)
 
   // Clouds
-  for (const cl of s.clouds) drawCloud(c, cl.x, cl.y)
+  drawCloud(c, W * 0.1, H * 0.12, 1.0)
+  drawCloud(c, W * 0.35, H * 0.07, 0.7)
+  drawCloud(c, W * 0.6, H * 0.15, 0.85)
+  drawCloud(c, W * 0.82, H * 0.09, 0.6)
 
   // Ground
-  drawGround(c, s.scrollX)
+  const gY = H * 0.88
+  c.fillStyle = '#5a9e3a'
+  c.fillRect(0, gY, W, H - gY)
+  c.fillStyle = '#3d7a28'
+  c.fillRect(0, gY, W, 8)
 
-  // Blocks (world coords -> screen coords)
-  const bSx = s.brickX - s.scrollX
-  const qSx = s.qBlockX - s.scrollX
-  const pSx = s.pipeX - s.scrollX
-  const tSx = s.toadX - s.scrollX
-  const gSx = s.goomba.x - s.scrollX
+  // Hills
+  drawHill(c, W * 0.08, gY, W * 0.22)
+  drawHill(c, W * 0.45, gY, W * 0.18)
+  drawHill(c, W * 0.78, gY, W * 0.15)
 
-  if (bSx > -40 && bSx < W + 40) drawBrick(c, bSx, GROUND - 32 - 96 + s.brickBumpY, s.brickBroken)
-  if (qSx > -40 && qSx < W + 40) drawQBlock(c, qSx, GROUND - 32 - 96 + s.qBlockBumpY, s.qBlockHit)
-
-  // Resume item
-  if (s.resumeItem) {
-    const rx = s.resumeItem.x - s.scrollX
-    c.fillStyle = '#fff'
-    c.fillRect(rx, s.resumeItem.y, 20, 24)
-    c.fillStyle = '#316ac5'
-    c.fillRect(rx + 2, s.resumeItem.y + 2, 16, 2)
-    c.fillRect(rx + 2, s.resumeItem.y + 6, 16, 2)
-    c.fillRect(rx + 2, s.resumeItem.y + 10, 10, 2)
-    c.fillStyle = '#e52521'
-    c.font = 'bold 7px "Courier New"'
-    c.fillText('CV', rx + 5, s.resumeItem.y + 20)
+  // Targets (structures)
+  for (const t of targets) {
+    t.hitFrame++
+    drawTarget(c, t)
   }
 
-  // Pipe
-  if (pSx > -60 && pSx < W + 60) drawPipe(c, pSx, GROUND - 80, 80)
-
-  // Toad
-  if (tSx > -30 && tSx < W + 30) drawToad(c, tSx, GROUND - 32)
-
-  // Goomba
-  if (s.goomba.alive && gSx > -30 && gSx < W + 30)
-    drawGoomba(c, gSx, GROUND - 28, s.frame, s.goomba.squished)
-
-  // Mario
-  const mSx = s.mario.x - s.scrollX
-  drawMario(c, mSx, s.mario.y, s.frame)
-
-  // HUD
-  drawHUD(c, s.score, s.coins)
-
-  // Phase hint text
-  if (s.phase === 'WALK_GOOMBA' && s.frame < 120) {
-    c.fillStyle = 'rgba(0,0,0,0.5)'
-    c.fillRect(W / 2 - 110, H - 36, 220, 22)
-    c.fillStyle = '#fff'
-    c.font = '12px "Courier New"'
-    c.textAlign = 'center'
-    c.fillText('Auto-playing... sit back and watch!', W / 2, H - 21)
-    c.textAlign = 'left'
+  // Trajectory dots
+  if (dragging && bird) {
+    const pts = trajectory()
+    c.fillStyle = 'rgba(255,255,255,0.7)'
+    for (let i = 0; i < pts.length; i += 2) {
+      const r = Math.max(1.5, 4 - i * 0.08)
+      c.beginPath()
+      c.arc(pts[i].x, pts[i].y, r, 0, Math.PI * 2)
+      c.fill()
+    }
   }
+
+  // Slingshot
+  drawSlingshot(c)
+
+  // Trail
+  for (let i = 0; i < trail.length; i++) {
+    const a = i / trail.length
+    c.fillStyle = `rgba(255,120,50,${a * 0.5})`
+    c.beginPath()
+    c.arc(trail[i].x, trail[i].y, bird ? bird.r * 0.5 * a : 4, 0, Math.PI * 2)
+    c.fill()
+  }
+
+  // Bird
+  if (bird && bird.alive) {
+    const bx = dragging ? dragPos.x : bird.x
+    const by = dragging ? dragPos.y : bird.y
+
+    // Elastic bands (only while dragging)
+    if (dragging) {
+      const lx = SL.x - SL.forkW / 2, ly = SL.y - SL.forkH
+      const rx = SL.x + SL.forkW / 2, ry = SL.y - SL.forkH
+      c.strokeStyle = '#8B4513'
+      c.lineWidth = 3
+      c.beginPath(); c.moveTo(lx, ly); c.lineTo(bx, by); c.stroke()
+      c.beginPath(); c.moveTo(rx, ry); c.lineTo(bx, by); c.stroke()
+    }
+
+    drawBird(c, bx, by, bird.r)
+  }
+
+  c.restore()
 }
 
+function drawCloud(c, x, y, scale) {
+  c.fillStyle = 'rgba(255,255,255,0.85)'
+  const s = scale * 50
+  c.beginPath()
+  c.arc(x, y, s * 0.5, 0, Math.PI * 2)
+  c.arc(x + s * 0.5, y - s * 0.2, s * 0.35, 0, Math.PI * 2)
+  c.arc(x + s, y, s * 0.45, 0, Math.PI * 2)
+  c.arc(x + s * 0.6, y + s * 0.25, s * 0.4, 0, Math.PI * 2)
+  c.arc(x + s * 0.2, y + s * 0.25, s * 0.4, 0, Math.PI * 2)
+  c.fill()
+}
+
+function drawHill(c, cx, baseY, r) {
+  c.fillStyle = '#4a8c2a'
+  c.beginPath()
+  c.arc(cx, baseY, r, Math.PI, 0)
+  c.fill()
+}
+
+function drawTarget(c, t) {
+  const shake = t.hit ? 0 : t.shakeX
+  const tx = t.x + shake
+
+  if (t.hit && t.hitFrame < 30) {
+    // Exploding — draw fragments
+    const prog = t.hitFrame / 30
+    const numFrag = 8
+    for (let i = 0; i < numFrag; i++) {
+      const angle = (i / numFrag) * Math.PI * 2
+      const dist = prog * 60
+      const fx = tx + t.w / 2 + Math.cos(angle) * dist
+      const fy = t.y + t.h / 2 + Math.sin(angle) * dist + prog * 20
+      const fw = t.w / 4 * (1 - prog)
+      const fh = t.h / 4 * (1 - prog)
+      c.fillStyle = t.color
+      c.globalAlpha = 1 - prog
+      c.fillRect(fx - fw / 2, fy - fh / 2, fw, fh)
+    }
+    c.globalAlpha = 1
+    return
+  }
+  if (t.hit) return
+
+  // Shadow
+  c.fillStyle = 'rgba(0,0,0,0.12)'
+  c.fillRect(tx + 4, t.y + 4, t.w, t.h)
+
+  // Block
+  c.fillStyle = t.color
+  c.beginPath()
+  c.roundRect(tx, t.y, t.w, t.h, 6)
+  c.fill()
+
+  // Highlight
+  c.fillStyle = 'rgba(255,255,255,0.2)'
+  c.beginPath()
+  c.roundRect(tx + 3, t.y + 3, t.w - 6, t.h * 0.4, 4)
+  c.fill()
+
+  // Crack lines
+  if (t.cracks.length) {
+    c.strokeStyle = 'rgba(0,0,0,0.3)'
+    c.lineWidth = 1.5
+    for (const cr of t.cracks) {
+      c.beginPath(); c.moveTo(cr.x1, cr.y1); c.lineTo(cr.x2, cr.y2); c.stroke()
+    }
+  }
+
+  // Label
+  c.fillStyle = t.textColor
+  c.font = `bold ${Math.max(10, t.h * 0.22)}px sans-serif`
+  c.textAlign = 'center'
+  c.textBaseline = 'middle'
+  c.fillText(t.label, tx + t.w / 2, t.y + t.h / 2)
+  c.textAlign = 'left'
+  c.textBaseline = 'alphabetic'
+
+  // Wooden legs / base
+  const legW = Math.max(6, t.w * 0.1)
+  c.fillStyle = '#8B5E3C'
+  c.fillRect(tx + t.w * 0.1, t.y + t.h, legW, H * 0.88 - (t.y + t.h))
+  c.fillRect(tx + t.w - t.w * 0.1 - legW, t.y + t.h, legW, H * 0.88 - (t.y + t.h))
+}
+
+function drawSlingshot(c) {
+  const { x, y, forkW, forkH, trunkH } = SL
+  c.fillStyle = '#6B3A10'
+  // Trunk
+  const tw = Math.max(8, forkW * 0.45)
+  c.fillRect(x - tw / 2, y - trunkH, tw, trunkH + 10)
+  // Left fork
+  c.save()
+  c.translate(x - forkW / 2, y - forkH)
+  c.rotate(-0.18)
+  c.fillRect(-tw / 2, 0, tw, forkH * 0.75)
+  c.restore()
+  // Right fork
+  c.save()
+  c.translate(x + forkW / 2, y - forkH)
+  c.rotate(0.18)
+  c.fillRect(-tw / 2, 0, tw, forkH * 0.75)
+  c.restore()
+  // Fork tips (knobs)
+  c.fillStyle = '#8B4A18'
+  c.beginPath()
+  c.arc(x - forkW / 2, y - forkH, tw * 0.8, 0, Math.PI * 2)
+  c.fill()
+  c.beginPath()
+  c.arc(x + forkW / 2, y - forkH, tw * 0.8, 0, Math.PI * 2)
+  c.fill()
+}
+
+function drawBird(c, x, y, r) {
+  // Body
+  c.fillStyle = '#e52521'
+  c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill()
+  // Highlight
+  c.fillStyle = 'rgba(255,255,255,0.3)'
+  c.beginPath(); c.arc(x - r * 0.25, y - r * 0.25, r * 0.45, 0, Math.PI * 2); c.fill()
+  // Angry brow
+  c.fillStyle = '#fff'
+  c.beginPath(); c.arc(x + r * 0.2, y - r * 0.15, r * 0.28, 0, Math.PI * 2); c.fill()
+  c.fillStyle = '#222'
+  c.beginPath(); c.arc(x + r * 0.25, y - r * 0.1, r * 0.16, 0, Math.PI * 2); c.fill()
+  c.fillStyle = '#555'
+  c.strokeStyle = '#555'
+  c.lineWidth = r * 0.12
+  c.beginPath()
+  c.moveTo(x + r * 0.05, y - r * 0.4)
+  c.lineTo(x + r * 0.5, y - r * 0.25)
+  c.stroke()
+  // Beak
+  c.fillStyle = '#f8a000'
+  c.beginPath()
+  c.moveTo(x + r * 0.7, y); c.lineTo(x + r * 1.1, y - r * 0.12); c.lineTo(x + r * 1.1, y + r * 0.12)
+  c.closePath(); c.fill()
+}
+
+// ── Loop ──────────────────────────────────────────────────────────────────────
 function loop() {
-  if (!gameState) return
-  tick(gameState)
-  render(gameState)
-  if (gameState.phase !== 'DONE') animId = requestAnimationFrame(loop)
+  tick()
+  render()
+  animId = requestAnimationFrame(loop)
 }
 
-function restartMario() {
-  showWorldSelect.value = false
-  showResume.value = false
-  showBio.value = false
-  bioPage.value = 0
-  gameState = createState()
-  if (animId) cancelAnimationFrame(animId)
-  loop()
+watch(modal, (val) => {
+  if (val) {
+    if (animId) { cancelAnimationFrame(animId); animId = null }
+  } else {
+    if (!animId) loop()
+  }
+})
+
+// ── Resize ────────────────────────────────────────────────────────────────────
+function resize() {
+  const el = container.value
+  if (!el || !canvas.value) return
+  dpr = window.devicePixelRatio || 1
+  W = el.clientWidth
+  H = el.clientHeight
+  canvas.value.width = W * dpr
+  canvas.value.height = H * dpr
+  isMobile.value = W < 768
+  buildSlingshot()
+  buildTargets()
+  resetBird()
+}
+
+// ── Pointer input ─────────────────────────────────────────────────────────────
+function getPos(e) {
+  const rect = canvas.value.getBoundingClientRect()
+  const src = e.touches ? e.touches[0] : e
+  return {
+    x: (src.clientX - rect.left) * (W / rect.width),
+    y: (src.clientY - rect.top) * (H / rect.height),
+  }
+}
+
+function isNearBird(pos) {
+  if (!bird || inFlight) return false
+  const bx = bird.x, by = bird.y
+  const hitR = bird.r * 5
+  return Math.hypot(pos.x - bx, pos.y - by) < hitR
+}
+
+function onDown(e) {
+  if (modal.value || inFlight || !bird || !bird.alive) return
+  e.preventDefault()
+  const pos = getPos(e)
+  if (isNearBird(pos)) {
+    dragging = true
+    const clamped = clampPull(pos.x, pos.y)
+    dragPos = clamped
+  }
+}
+
+function onMove(e) {
+  if (!dragging) return
+  e.preventDefault()
+  const pos = getPos(e)
+  dragPos = clampPull(pos.x, pos.y)
+  bird.x = dragPos.x
+  bird.y = dragPos.y
+}
+
+function onUp(e) {
+  if (!dragging) return
+  e.preventDefault()
+  firebird()
+}
+
+function restart() {
+  birdsLeft.value = totalBirds
+  score.value = 0
+  hasFired.value = false
+  targetsHit.value = 0
+  modal.value = null
+  buildTargets()
+  resetBird()
 }
 
 onMounted(() => {
   ctx = canvas.value.getContext('2d')
-  gameState = createState()
+  resize()
   loop()
+
+  window.addEventListener('resize', resize)
+
+  const el = canvas.value
+  el.addEventListener('mousedown', onDown)
+  el.addEventListener('mousemove', onMove)
+  el.addEventListener('mouseup', onUp)
+  el.addEventListener('touchstart', onDown, { passive: false })
+  el.addEventListener('touchmove', onMove, { passive: false })
+  el.addEventListener('touchend', onUp, { passive: false })
 })
 
 onUnmounted(() => {
   if (animId) cancelAnimationFrame(animId)
+  window.removeEventListener('resize', resize)
+  if (canvas.value) {
+    const el = canvas.value
+    el.removeEventListener('mousedown', onDown)
+    el.removeEventListener('mousemove', onMove)
+    el.removeEventListener('mouseup', onUp)
+    el.removeEventListener('touchstart', onDown)
+    el.removeEventListener('touchmove', onMove)
+    el.removeEventListener('touchend', onUp)
+  }
 })
 </script>
 
 <style scoped>
-.popup-enter-active, .popup-leave-active { transition: opacity .2s, transform .2s; }
-.popup-enter-from, .popup-leave-to { opacity: 0; transform: scale(0.95); }
-.warp-enter-active, .warp-leave-active { transition: opacity .4s; }
-.warp-enter-from, .warp-leave-to { opacity: 0; }
+.pop-enter-active, .pop-leave-active { transition: opacity .2s, transform .2s; }
+.pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.96) translateY(10px); }
 </style>

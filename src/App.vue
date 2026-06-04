@@ -34,8 +34,7 @@ import NormalFlavor from './components/flavors/NormalFlavor.vue'
 import IphoneFlavor from './components/flavors/IphoneFlavor.vue'
 import MarioFlavor from './components/flavors/MarioFlavor.vue'
 
-const saved = localStorage.getItem('portfolio-flavor')
-const flavor = ref(saved || null)
+const flavor = ref(null)
 const booting = ref(true)
 
 function onPick(id) {
@@ -44,7 +43,6 @@ function onPick(id) {
 }
 
 function reset() {
-  localStorage.removeItem('portfolio-flavor')
   flavor.value = null
   booting.value = true
 }

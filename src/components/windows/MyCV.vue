@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 overflow-auto text-[11px] bg-white h-full">
+  <div class="p-4 overflow-auto text-[11px] sm:text-[13px] bg-white h-full">
 
     <!-- Header -->
     <div class="flex items-center gap-4 border-b-2 border-[#0058e6] pb-3 mb-4">

@@ -1,51 +1,94 @@
 <template>
-  <div class="h-full flex flex-col bg-white">
-    <!-- Notepad-style menu bar override (no File/View/Help - real notepad has its own) -->
-    <textarea
-      readonly
-      class="flex-1 w-full resize-none border-none outline-none p-2 font-mono text-[12px] leading-relaxed text-[#111] bg-white"
-      :value="bio"
-    />
+  <div class="bg-white overflow-auto">
+
+    <!-- Hero banner with avatar anchored to bottom -->
+    <div class="relative h-20 flex-shrink-0"
+      style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%)">
+      <div class="absolute inset-0 opacity-20"
+        style="background:radial-gradient(circle at 70% 50%,#5b6ef5 0%,transparent 60%)" />
+      <img src="/danselfie.jpg" alt="Dan McCarthy"
+        class="absolute bottom-0 left-5 translate-y-1/2 w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
+        @error="e => e.target.style.display='none'" />
+    </div>
+
+    <!-- Content — top padding makes room for the overlapping avatar -->
+    <div class="px-5 pb-5 pt-14">
+      <div class="mb-4">
+        <h1 class="text-lg sm:text-xl font-bold text-[#111] leading-tight">Dan McCarthy</h1>
+        <p class="text-[#666] text-[12px] sm:text-[13px]">Austin, TX</p>
+      </div>
+
+      <!-- Tags -->
+      <div class="flex flex-wrap gap-1.5 mb-5">
+        <Chip v-for="t in tags" :key="t" :label="t" />
+      </div>
+
+      <!-- Bio sections -->
+      <Section title="Who I am">
+        I'm a B2B sales and account management veteran turned indie software builder.
+        8+ years of customer-facing SaaS work - enterprise onboarding, customer success,
+        and getting people to actually get value from software.
+      </Section>
+
+      <Section title="What I build">
+        I run <strong>Scout Industries</strong> - a portfolio of indie SaaS products I've built
+        and shipped alongside a full-time career. I think of myself as a code coxswain:
+        I don't row, I steer. AI agents handle the oars. Knowing where the boat is supposed
+        to go - and why - that's the job.
+      </Section>
+
+      <Section title="Outside the keyboard">
+        I live in South Austin with my wife, our one-year-old son, and our old dog Willie.
+        I also host <strong>TriviATX</strong> - a weekly pub quiz now past 100 editions.
+        I run the whole thing solo: writing, hosting, venue coordination, and keeping the
+        crowd honest.
+      </Section>
+
+      <!-- Links -->
+      <div class="flex flex-wrap gap-2 mt-5 pt-4 border-t border-[#f0f0f0]">
+        <a href="mailto:danshandle@gmail.com"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-black text-white rounded-full text-[11px] font-medium no-underline">
+          ✉ Email
+        </a>
+        <a href="https://linkedin.com/in/danjmccarthy" target="_blank" rel="noopener"
+          class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
+          💼 LinkedIn
+        </a>
+        <a href="https://github.com/HansDandle" target="_blank" rel="noopener"
+          class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
+          🐙 GitHub
+        </a>
+        <a href="/danmccarthyresume.pdf" target="_blank"
+          class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
+          ⬇ Resume
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-const bio = `Dan McCarthy - bio.txt
-════════════════════════════════════════════════════════════════
+import { defineComponent, h } from 'vue'
 
-I'm a B2B sales and account management veteran turned indie
-software builder, based in Austin, Texas.
+const tags = ['SaaS', 'Customer Success', 'Implementation', 'Indie Builder', 'Austin TX', 'TriviATX']
 
-For the past several years I've been running Scout Industries,
-a portfolio of independent software products I've built and
-shipped while holding down a career, raising a kid, and hosting
-TriviATX, a weekly pub quiz now past its 100th edition.
+const Chip = defineComponent({
+  props: ['label'],
+  setup(props) {
+    return () => h('span', {
+      class: 'px-2.5 py-0.5 rounded-full text-[11px] font-medium',
+      style: 'background:#f0f4ff;color:#3050b0'
+    }, props.label)
+  }
+})
 
-I call myself a code coxswain. I don't row, I steer. Claude
-handles the oars, and together we've shipped:
-
-  • Task Coop      - a worker-owned local services marketplace
-                     competing with TaskRabbit and Thumbtack
-  • StratScout     - a walk-forward quant trading system running
-                     live in a real brokerage account
-  • ScratchScout   - a scratch-off lottery EV tracker
-
-Plus two dozen more repos across leads generation, patent
-search, senior connectivity, and whatever problem showed up next.
-
-────────────────────────────────────────────────────────────────
-
-My sales background shapes how I build. I know what a prospect
-actually needs to hear, what a customer actually needs to do,
-and where most software loses people before they ever get value.
-That perspective is baked into everything I ship.
-
-A metronome can't replace a coxswain. Neither can Claude replace
-someone who knows where the boat is supposed to go.
-
-────────────────────────────────────────────────────────────────
-📍 Austin, Texas
-🔗 linkedin.com/in/danjmccarthy
-🐙 github.com/HansDandle
-`
+const Section = defineComponent({
+  props: ['title'],
+  setup(props, { slots }) {
+    return () => h('div', { class: 'mb-4' }, [
+      h('h2', { class: 'text-[11px] font-bold uppercase tracking-widest text-[#999] mb-1.5' }, props.title),
+      h('p', { class: 'text-[13px] sm:text-[15px] text-[#444] leading-relaxed' }, slots.default?.()),
+    ])
+  }
+})
 </script>
