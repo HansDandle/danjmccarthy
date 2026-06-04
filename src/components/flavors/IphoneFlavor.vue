@@ -48,7 +48,7 @@
 
     <!-- Sheet panel -->
     <Transition name="sheet">
-      <div v-if="activeApp" class="absolute bottom-0 left-0 right-0 z-[51] bg-white rounded-t-3xl flex flex-col" style="max-height:88vh">
+      <div v-if="activeApp" class="absolute bottom-0 left-0 right-0 z-[51] bg-white rounded-t-3xl flex flex-col" style="max-height:88dvh">
         <!-- Handle -->
         <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
           <div class="w-10 h-1 rounded-full bg-[#ddd]" />
@@ -62,7 +62,7 @@
           <button class="text-[#007aff] text-sm font-medium" @click="activeApp = null">Done</button>
         </div>
         <!-- Scrollable content -->
-        <div class="overflow-y-auto flex-1 min-h-0">
+        <div class="overflow-y-auto flex-1 min-h-0" style="padding-bottom:env(safe-area-inset-bottom,16px)">
           <component :is="activeApp.component" v-if="activeApp.component" />
           <div v-else class="p-5 text-[#333] text-sm leading-relaxed" v-html="activeApp.content" />
         </div>

@@ -8,12 +8,12 @@
       <div v-if="modal" class="absolute inset-0 z-50 flex items-end sm:items-center justify-center p-2 sm:p-6"
         style="background:rgba(0,0,0,0.55)">
         <div class="bg-white rounded-2xl overflow-hidden w-full max-w-lg shadow-2xl"
-          :style="{ maxHeight: isMobile ? '88vh' : '80vh' }">
+          :style="{ maxHeight: isMobile ? '88dvh' : '80dvh' }">
           <div class="flex items-center justify-between px-4 py-3 border-b border-[#eee] flex-shrink-0">
             <span class="font-bold text-sm">{{ modal.title }}</span>
             <button class="px-3 py-1 bg-[#e55] text-white rounded text-sm font-bold" @click="modal = null">✕</button>
           </div>
-          <div class="overflow-y-auto" :style="{ maxHeight: isMobile ? 'calc(88vh - 52px)' : 'calc(80vh - 52px)' }">
+          <div class="overflow-y-auto" :style="{ maxHeight: isMobile ? 'calc(88dvh - 52px)' : 'calc(80dvh - 52px)' }" style="padding-bottom:env(safe-area-inset-bottom,16px)">
             <!-- CV -->
             <MyCV v-if="modal.type === 'cv'" />
             <!-- Bio -->
