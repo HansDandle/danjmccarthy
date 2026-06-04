@@ -53,7 +53,7 @@ export const PROJECTS = [
   {
     id: 'priorscout',
     label: 'PriorScout',
-    url: 'https://priorscout.vercel.app',
+    url: null,
     favicon: fav('priorscout.vercel.app'),
     description: 'Better IP & prior art searches - coming soon.',
   },

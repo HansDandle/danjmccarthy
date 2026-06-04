@@ -54,11 +54,10 @@ const ProjectItem = defineComponent({
   props: ['project'],
   emits: ['click'],
   setup(props, { emit }) {
-    return () => h('a', {
-      href: props.project.url,
-      target: '_blank',
-      rel: 'noopener',
+    return () => h(props.project.url ? 'a' : 'div', {
+      ...(props.project.url ? { href: props.project.url, target: '_blank', rel: 'noopener' } : {}),
       class: 'flex items-center gap-1.5 px-2 py-1 cursor-default hover:bg-[#316ac5] hover:text-white no-underline text-black',
+      title: !props.project.url ? props.project.description : undefined,
       onClick: () => emit('click'),
     }, [
       h('img', { src: props.project.favicon, alt: '', class: 'w-4 h-4 object-contain flex-shrink-0' }),

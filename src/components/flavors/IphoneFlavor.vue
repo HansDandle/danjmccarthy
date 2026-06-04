@@ -93,9 +93,9 @@ onUnmounted(() => clearInterval(interval))
 const ProjectsApp = defineComponent({
   setup() {
     return () => h('div', { class: 'p-4 grid grid-cols-2 gap-3' },
-      PROJECTS.map(p => h('a', {
-        href: p.url, target: '_blank', rel: 'noopener',
-        class: 'flex items-center gap-3 p-3 rounded-2xl border border-[#eee] no-underline text-inherit',
+      PROJECTS.map(p => h(p.url ? 'a' : 'div', {
+        ...(p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}),
+        class: 'flex items-center gap-3 p-3 rounded-2xl border border-[#eee] no-underline text-inherit' + (p.url ? '' : ' opacity-60'),
       }, [
         h('img', { src: p.favicon, class: 'w-8 h-8 object-contain rounded-lg', onError: e => e.target.style.display = 'none' }),
         h('div', [

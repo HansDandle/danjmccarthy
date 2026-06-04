@@ -48,10 +48,12 @@
     <section id="projects" class="max-w-3xl mx-auto px-6 py-14">
       <h2 class="text-xl font-bold mb-8">Projects</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <a
+        <component
           v-for="p in projects" :key="p.id"
-          :href="p.url" target="_blank" rel="noopener"
+          :is="p.url ? 'a' : 'div'"
+          v-bind="p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}"
           class="flex items-start gap-3 p-4 rounded-xl border border-[#e5e5e5] hover:border-[#ccc] hover:shadow-sm transition-all no-underline text-inherit"
+          :class="!p.url ? 'opacity-60 cursor-default' : ''"
         >
           <img :src="p.favicon" :alt="p.label" class="w-8 h-8 object-contain rounded flex-shrink-0 mt-0.5" @error="e => e.target.style.display='none'" />
           <div>

@@ -1,15 +1,25 @@
 <template>
   <!-- Mobile: static grid item, tap to open -->
   <div v-if="mobile"
-    class="flex flex-col items-center w-[108px] select-none cursor-default"
-    @click="onDblClick"
+    class="flex flex-col items-center w-[108px] select-none cursor-default relative"
+    @click="onMobileTap"
   >
     <div class="flex flex-col items-center w-full p-1.5 rounded border border-transparent active:bg-[rgba(49,106,197,0.5)] active:border-[rgba(49,106,197,0.8)]">
-      <img v-if="imgSrc" :src="imgSrc" :alt="label" class="w-14 h-14 object-contain" />
+      <img v-if="imgSrc" :src="imgSrc" :alt="label" class="w-14 h-14 object-contain" :class="!href && tooltip ? 'opacity-60' : ''" />
       <span v-else class="text-[52px] leading-none">{{ icon }}</span>
       <span class="mt-1 text-white text-[12px] text-center leading-snug break-words max-w-[100px]"
         style="text-shadow:1px 1px 2px #000,0 0 5px #000">{{ label }}</span>
     </div>
+    <!-- Mobile tooltip popup -->
+    <Teleport to="body">
+      <div v-if="showMobileTip"
+        class="fixed z-[99999] left-1/2 -translate-x-1/2 bottom-24 pointer-events-none"
+        style="max-width:80vw">
+        <div class="bg-black/85 text-white text-[13px] px-4 py-2.5 rounded-xl text-center leading-snug shadow-lg backdrop-blur-sm">
+          {{ tooltip }}
+        </div>
+      </div>
+    </Teleport>
   </div>
 
   <!-- Desktop: draggable, absolutely positioned -->
@@ -67,6 +77,18 @@ const selected = ref(false)
 const dragging = ref(false)
 const showTip = ref(false)
 const tipStyle = ref({})
+const showMobileTip = ref(false)
+let mobileTipTimer = null
+
+function onMobileTap() {
+  if (!props.href && props.tooltip) {
+    clearTimeout(mobileTipTimer)
+    showMobileTip.value = true
+    mobileTipTimer = setTimeout(() => { showMobileTip.value = false }, 2500)
+    return
+  }
+  onDblClick()
+}
 
 const TIP_W = 260
 

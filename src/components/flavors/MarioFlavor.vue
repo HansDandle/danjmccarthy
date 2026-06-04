@@ -20,8 +20,11 @@
             <Bio v-else-if="modal.type === 'bio'" />
             <!-- Projects -->
             <div v-else class="p-4 grid grid-cols-2 gap-3">
-              <a v-for="p in projects" :key="p.id" :href="p.url" target="_blank" rel="noopener"
-                class="flex items-center gap-3 p-3 rounded-xl border border-[#eee] no-underline text-inherit hover:border-[#aaa] transition-colors">
+              <component v-for="p in projects" :key="p.id"
+                :is="p.url ? 'a' : 'div'"
+                v-bind="p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}"
+                class="flex items-center gap-3 p-3 rounded-xl border border-[#eee] no-underline text-inherit transition-colors"
+                :class="p.url ? 'hover:border-[#aaa] cursor-pointer' : 'opacity-50 cursor-default'">
                 <img :src="p.favicon" class="w-8 h-8 object-contain rounded flex-shrink-0"
                   @error="e => e.target.style.display='none'" />
                 <div>
