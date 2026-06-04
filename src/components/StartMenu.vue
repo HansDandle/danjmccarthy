@@ -36,8 +36,8 @@
       <!-- Footer -->
       <div class="flex justify-end gap-1.5 px-2 py-1 border-t border-[#9eb1d8]"
            style="background:linear-gradient(180deg,#d4ddf5 0%,#c0cce8 100%)">
-        <FooterBtn @click="$emit('close')">🚪 Log Off</FooterBtn>
-        <FooterBtn @click="$emit('close')">⏻ Shut Down</FooterBtn>
+        <FooterBtn @click="$emit('reset')">🚪 Log Off</FooterBtn>
+        <FooterBtn @click="$emit('reset')">⏻ Shut Down</FooterBtn>
       </div>
     </div>
   </Transition>
@@ -48,7 +48,7 @@ import { defineComponent, h } from 'vue'
 import { PROJECTS } from '../data/projects.js'
 
 defineProps({ open: Boolean })
-defineEmits(['open', 'close'])
+defineEmits(['open', 'close', 'reset'])
 
 const ProjectItem = defineComponent({
   props: ['project'],

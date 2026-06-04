@@ -41,27 +41,30 @@
       <AppIcon v-for="app in dock" :key="app.id" :app="app" dock @tap="openApp(app)" />
     </div>
 
-    <!-- Modal sheet -->
+    <!-- Backdrop -->
+    <Transition name="fade">
+      <div v-if="activeApp" class="absolute inset-0 z-50" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)" @click="activeApp = null" />
+    </Transition>
+
+    <!-- Sheet panel -->
     <Transition name="sheet">
-      <div v-if="activeApp" class="absolute inset-0 z-50 flex flex-col" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)" @click.self="activeApp = null">
-        <div class="mt-auto bg-white rounded-t-3xl overflow-hidden" style="max-height:85vh">
-          <!-- Sheet handle -->
-          <div class="flex justify-center pt-3 pb-1">
-            <div class="w-10 h-1 rounded-full bg-[#ccc]" />
+      <div v-if="activeApp" class="absolute bottom-0 left-0 right-0 z-[51] bg-white rounded-t-3xl flex flex-col" style="max-height:88vh">
+        <!-- Handle -->
+        <div class="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div class="w-10 h-1 rounded-full bg-[#ddd]" />
+        </div>
+        <!-- Title bar -->
+        <div class="flex items-center justify-between px-5 py-3 border-b border-[#f0f0f0] flex-shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">{{ activeApp.emoji }}</span>
+            <span class="font-semibold text-[15px]">{{ activeApp.name }}</span>
           </div>
-          <!-- Sheet title -->
-          <div class="flex items-center justify-between px-5 py-3 border-b border-[#f0f0f0]">
-            <div class="flex items-center gap-2">
-              <span class="text-2xl">{{ activeApp.emoji }}</span>
-              <span class="font-semibold text-[15px]">{{ activeApp.name }}</span>
-            </div>
-            <button class="text-[#007aff] text-sm font-medium" @click="activeApp = null">Done</button>
-          </div>
-          <!-- Sheet content -->
-          <div class="overflow-y-auto" style="max-height:calc(85vh - 100px)">
-            <component :is="activeApp.component" v-if="activeApp.component" />
-            <div v-else class="p-5 text-[#333] text-sm leading-relaxed" v-html="activeApp.content" />
-          </div>
+          <button class="text-[#007aff] text-sm font-medium" @click="activeApp = null">Done</button>
+        </div>
+        <!-- Scrollable content -->
+        <div class="overflow-y-auto flex-1 min-h-0">
+          <component :is="activeApp.component" v-if="activeApp.component" />
+          <div v-else class="p-5 text-[#333] text-sm leading-relaxed" v-html="activeApp.content" />
         </div>
       </div>
     </Transition>
@@ -152,6 +155,8 @@ const AppIcon = defineComponent({
 </script>
 
 <style scoped>
-.sheet-enter-active, .sheet-leave-active { transition: opacity .25s, transform .25s; }
-.sheet-enter-from, .sheet-leave-to { opacity: 0; transform: translateY(100%); }
+.fade-enter-active, .fade-leave-active { transition: opacity .25s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.sheet-enter-active, .sheet-leave-active { transition: transform .3s cubic-bezier(.32,0,.67,0); }
+.sheet-enter-from, .sheet-leave-to { transform: translateY(100%); }
 </style>

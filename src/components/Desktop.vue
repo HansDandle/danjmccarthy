@@ -64,6 +64,7 @@
     :open="startMenuOpen"
     @open="id => { winStore.openWindow(id); startMenuOpen = false }"
     @close="startMenuOpen = false"
+    @reset="$emit('reset')"
   />
 
   <div v-if="startMenuOpen" class="fixed inset-0 z-[9997]" @click="startMenuOpen = false" />
@@ -83,6 +84,7 @@ import Minesweeper from './windows/Minesweeper.vue'
 import Terminal from './windows/Terminal.vue'
 import Bio from './windows/Bio.vue'
 
+defineEmits(['reset'])
 const winStore = useWindowsStore()
 const startMenuOpen = ref(false)
 const openWindows = computed(() => winStore.openWindows)

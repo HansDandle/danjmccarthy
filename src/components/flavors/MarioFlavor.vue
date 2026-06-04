@@ -35,6 +35,28 @@
       </div>
     </Transition>
 
+    <!-- Game over screen -->
+    <Transition name="pop">
+      <div v-if="gameOver"
+        class="absolute inset-0 z-40 flex flex-col items-center justify-center"
+        style="background:rgba(0,0,0,0.6)">
+        <div class="bg-white rounded-2xl p-8 text-center shadow-2xl mx-4 max-w-sm w-full">
+          <div class="text-5xl mb-3">😬</div>
+          <h2 class="text-2xl font-bold mb-1">Out of birds!</h2>
+          <p class="text-[#666] text-sm mb-6">You missed a few. That's ok — Dan's easy to reach.</p>
+          <div class="flex flex-col gap-3">
+            <a href="tel:5129214157"
+              class="px-5 py-3 bg-[#34c759] text-white rounded-xl text-sm font-bold no-underline flex items-center justify-center gap-2">
+              📞 Call Dan — (512) 921-4157
+            </a>
+            <button class="px-5 py-2.5 border border-[#ddd] rounded-xl text-sm font-medium" @click="restart">
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Win screen -->
     <Transition name="pop">
       <div v-if="allCleared" class="absolute inset-0 z-40 flex flex-col items-center justify-center"
@@ -63,11 +85,14 @@
     <div class="absolute top-3 right-3 z-10 font-bold text-white text-sm"
       style="text-shadow:1px 1px 3px rgba(0,0,0,0.5)">{{ score.toLocaleString() }}</div>
 
-    <!-- Aim hint -->
-    <div v-if="!hasFired && !modal" class="absolute bottom-4 left-0 right-0 text-center z-10
-      text-white text-xs font-medium pointer-events-none"
-      style="text-shadow:1px 1px 3px rgba(0,0,0,0.6)">
-      Pull back on the bird to launch
+    <!-- Hint bubble near the slingshot -->
+    <div v-if="!hasFired && !modal"
+      class="absolute z-10 pointer-events-none flex flex-col items-center gap-1"
+      :style="hintStyle">
+      <div class="bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm whitespace-nowrap">
+        👆 Drag the bird to aim
+      </div>
+      <div class="w-0.5 h-4 bg-black/40 rounded-full" />
     </div>
   </div>
 </template>
@@ -82,6 +107,7 @@ const projects = PROJECTS
 const container = ref(null)
 const canvas = ref(null)
 const modal = ref(null)
+const hintStyle = ref({})
 const isMobile = ref(window.innerWidth < 768)
 
 // ── Game config ─────────────────────────────────────────────────────────────
@@ -91,12 +117,14 @@ const score = ref(0)
 const hasFired = ref(false)
 const targetsHit = ref(0)
 const allCleared = computed(() => targetsHit.value >= TARGET_DEFS.length && !modal.value)
+const gameOver = computed(() => birdsLeft.value === 0 && !allCleared.value && !modal.value && (!bird || !bird.alive) && !inFlight)
 
 // ── Canvas state ─────────────────────────────────────────────────────────────
 let W = 800, H = 500
 let ctx = null
 let animId = null
 let dpr = 1
+let animFrame = 0
 
 // Slingshot
 const SL = { x: 0, y: 0, forkW: 22, forkH: 60, trunkH: 80 }
@@ -310,6 +338,7 @@ function render() {
   if (bird && bird.alive) {
     const bx = dragging ? dragPos.x : bird.x
     const by = dragging ? dragPos.y : bird.y
+    drawPulse(c, bx, by, bird.r, animFrame)
 
     // Elastic bands (only while dragging)
     if (dragging) {
@@ -413,30 +442,63 @@ function drawTarget(c, t) {
 
 function drawSlingshot(c) {
   const { x, y, forkW, forkH, trunkH } = SL
-  c.fillStyle = '#6B3A10'
+  const tw = Math.max(10, forkW * 0.5)
+  const tipL = { x: x - forkW, y: y - forkH }
+  const tipR = { x: x + forkW, y: y - forkH }
+  const base = { x, y: y - trunkH * 0.35 }
+
+  c.lineCap = 'round'
+  c.lineJoin = 'round'
+
+  // Shadow
+  c.strokeStyle = 'rgba(0,0,0,0.2)'
+  c.lineWidth = tw + 4
+  c.beginPath(); c.moveTo(x + 3, y + 8); c.lineTo(x + 3, y - trunkH * 0.3); c.stroke()
+  c.beginPath(); c.moveTo(base.x + 3, base.y); c.lineTo(tipL.x + 3, tipL.y); c.stroke()
+  c.beginPath(); c.moveTo(base.x + 3, base.y); c.lineTo(tipR.x + 3, tipR.y); c.stroke()
+
   // Trunk
-  const tw = Math.max(8, forkW * 0.45)
-  c.fillRect(x - tw / 2, y - trunkH, tw, trunkH + 10)
-  // Left fork
-  c.save()
-  c.translate(x - forkW / 2, y - forkH)
-  c.rotate(-0.18)
-  c.fillRect(-tw / 2, 0, tw, forkH * 0.75)
-  c.restore()
-  // Right fork
-  c.save()
-  c.translate(x + forkW / 2, y - forkH)
-  c.rotate(0.18)
-  c.fillRect(-tw / 2, 0, tw, forkH * 0.75)
-  c.restore()
-  // Fork tips (knobs)
+  c.strokeStyle = '#5a2d0c'
+  c.lineWidth = tw
+  c.beginPath(); c.moveTo(x, y + 8); c.lineTo(x, y - trunkH * 0.3); c.stroke()
+
+  // Fork arms
+  c.strokeStyle = '#6B3A10'
+  c.lineWidth = tw * 0.85
+  c.beginPath(); c.moveTo(base.x, base.y); c.lineTo(tipL.x, tipL.y); c.stroke()
+  c.beginPath(); c.moveTo(base.x, base.y); c.lineTo(tipR.x, tipR.y); c.stroke()
+
+  // Lighter grain highlight
+  c.strokeStyle = 'rgba(255,200,100,0.25)'
+  c.lineWidth = tw * 0.3
+  c.beginPath(); c.moveTo(x - tw * 0.1, y + 8); c.lineTo(x - tw * 0.1, y - trunkH * 0.3); c.stroke()
+
+  // Tip knobs
   c.fillStyle = '#8B4A18'
-  c.beginPath()
-  c.arc(x - forkW / 2, y - forkH, tw * 0.8, 0, Math.PI * 2)
-  c.fill()
-  c.beginPath()
-  c.arc(x + forkW / 2, y - forkH, tw * 0.8, 0, Math.PI * 2)
-  c.fill()
+  c.beginPath(); c.arc(tipL.x, tipL.y, tw * 0.9, 0, Math.PI * 2); c.fill()
+  c.beginPath(); c.arc(tipR.x, tipR.y, tw * 0.9, 0, Math.PI * 2); c.fill()
+  c.fillStyle = '#a05520'
+  c.beginPath(); c.arc(tipL.x, tipL.y, tw * 0.5, 0, Math.PI * 2); c.fill()
+  c.beginPath(); c.arc(tipR.x, tipR.y, tw * 0.5, 0, Math.PI * 2); c.fill()
+
+  // Resting band (when not dragging)
+  if (!dragging && bird && bird.alive && !inFlight) {
+    c.strokeStyle = '#8B5E3C'
+    c.lineWidth = 2.5
+    c.globalAlpha = 0.7
+    c.beginPath(); c.moveTo(tipL.x, tipL.y); c.lineTo(bird.x, bird.y); c.stroke()
+    c.beginPath(); c.moveTo(tipR.x, tipR.y); c.lineTo(bird.x, bird.y); c.stroke()
+    c.globalAlpha = 1
+  }
+}
+
+function drawPulse(c, x, y, r, frame) {
+  if (inFlight || dragging) return
+  const pulse = (Math.sin(frame * 0.08) + 1) / 2  // 0-1
+  const pulseR = r + 6 + pulse * 10
+  c.strokeStyle = `rgba(255,255,255,${0.6 - pulse * 0.4})`
+  c.lineWidth = 2
+  c.beginPath(); c.arc(x, y, pulseR, 0, Math.PI * 2); c.stroke()
 }
 
 function drawBird(c, x, y, r) {
@@ -467,6 +529,7 @@ function drawBird(c, x, y, r) {
 
 // ── Loop ──────────────────────────────────────────────────────────────────────
 function loop() {
+  animFrame++
   tick()
   render()
   animId = requestAnimationFrame(loop)
@@ -493,6 +556,18 @@ function resize() {
   buildSlingshot()
   buildTargets()
   resetBird()
+  updateHintStyle()
+}
+
+function updateHintStyle() {
+  const birdY = SL.y - SL.forkH * 0.7
+  const pct = (birdY / H) * 100
+  const leftPct = (SL.x / W) * 100
+  hintStyle.value = {
+    bottom: `${100 - pct + 6}%`,
+    left: `${leftPct}%`,
+    transform: 'translateX(-50%)',
+  }
 }
 
 // ── Pointer input ─────────────────────────────────────────────────────────────
@@ -544,6 +619,7 @@ function restart() {
   hasFired.value = false
   targetsHit.value = 0
   modal.value = null
+  inFlight = false
   buildTargets()
   resetBird()
 }
