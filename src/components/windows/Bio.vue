@@ -60,7 +60,7 @@
           class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
           🐙 GitHub
         </a>
-        <a href="/DanMcCarthyResume.pdf" target="_blank"
+        <a href="/Dan_McCarthy_Resume_Fall26.pdf" target="_blank"
           class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
           ⬇ Resume
         </a>

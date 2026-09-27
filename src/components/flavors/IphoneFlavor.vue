@@ -119,7 +119,7 @@ const apps = [
   { id: 'linkedin', name: 'LinkedIn', emoji: '💼', bg: 'linear-gradient(135deg,#0077b5,#004182)', href: 'https://linkedin.com/in/danjmccarthy' },
   { id: 'github',   name: 'GitHub',   emoji: '🐙', bg: 'linear-gradient(135deg,#333,#111)', href: 'https://github.com/HansDandle' },
   { id: 'email',    name: 'Mail',     emoji: '✉️', bg: 'linear-gradient(135deg,#5ac8fa,#007aff)', href: 'mailto:danshandle@gmail.com' },
-  { id: 'resume',   name: 'PDF',      emoji: '⬇️', bg: 'linear-gradient(135deg,#ff2d55,#c0002f)', href: '/DanMcCarthyResume.pdf' },
+  { id: 'resume',   name: 'PDF',      emoji: '⬇️', bg: 'linear-gradient(135deg,#ff2d55,#c0002f)', href: '/Dan_McCarthy_Resume_Fall26.pdf' },
   { id: 'trivia',   name: 'TriviATX', emoji: '🎤', bg: 'linear-gradient(135deg,#af52de,#7d29b0)', content: '<div class="p-5"><h2 class="font-bold text-lg mb-2">TriviATX</h2><p>Austin\'s weekly pub quiz - 100+ editions hosted by Dan. Every week, live, in person. Ask him about it.</p></div>' },
 ]
 

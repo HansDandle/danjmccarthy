@@ -25,7 +25,7 @@
         Account Executive at Recharge Media, selling advertising, underwriting and sponsorships across four Central Texas radio stations, with eight years of enterprise and public-sector account management behind it. I also build my own sales tooling: PourScout, the CRM I prospect and sell from every day, plus a worker-owned marketplace, lead-gen sites and more - mostly with Claude doing the heavy lifting.
       </p>
       <div class="flex flex-wrap gap-3 mt-8">
-        <a href="/DanMcCarthyResume.pdf" target="_blank" class="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-[#222] transition-colors">Download Resume</a>
+        <a href="/Dan_McCarthy_Resume_Fall26.pdf" target="_blank" class="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-[#222] transition-colors">Download Resume</a>
         <a href="https://linkedin.com/in/danjmccarthy" target="_blank" class="px-4 py-2 border border-[#ddd] rounded-lg text-sm font-medium hover:border-[#999] transition-colors">LinkedIn</a>
         <a href="https://github.com/HansDandle" target="_blank" class="px-4 py-2 border border-[#ddd] rounded-lg text-sm font-medium hover:border-[#999] transition-colors">GitHub</a>
         <a href="mailto:danshandle@gmail.com" class="px-4 py-2 border border-[#ddd] rounded-lg text-sm font-medium hover:border-[#999] transition-colors">Email</a>

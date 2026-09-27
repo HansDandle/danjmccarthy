@@ -126,7 +126,7 @@
 
     <!-- Download -->
     <div class="mt-4 pt-3 border-t border-[#ddd]">
-      <a href="/DanMcCarthyResume.pdf" target="_blank"
+      <a href="/Dan_McCarthy_Resume_Fall26.pdf" target="_blank"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#316ac5] text-white rounded hover:bg-[#2255a0] text-[11px]">
         ⬇ Download PDF Resume
       </a>
