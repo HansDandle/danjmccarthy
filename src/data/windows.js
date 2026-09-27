@@ -1,4 +1,18 @@
-export const WINDOWS = [
+import { CATEGORIES } from './projects.js'
+
+// One Explorer-style folder window per project category
+export const FOLDER_WINDOWS = CATEGORIES.map((c, i) => ({
+  id: `folder-${c.id}`,
+  category: c.id,
+  title: c.label,
+  icon: '📁',
+  initX: 180 + i * 30, initY: 90 + i * 30,
+  initW: 740, initH: 470,
+  minW: 320, minH: 240,
+  onDesktop: false,
+}))
+
+const BASE_WINDOWS = [
   {
     id: 'cv',
     title: 'My CV',
@@ -37,3 +51,5 @@ export const WINDOWS = [
     onDesktop: true,
   },
 ]
+
+export const WINDOWS = [...BASE_WINDOWS, ...FOLDER_WINDOWS]

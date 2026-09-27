@@ -25,9 +25,11 @@
           <MenuItem icon="🐙" label="GitHub" sub="github.com/HansDandle" :href="'https://github.com/HansDandle'" />
         </div>
         <!-- Right: projects -->
-        <div class="w-[148px] py-2 overflow-y-auto" style="background:#dce4f5; max-height:300px">
-          <p class="text-[10px] font-bold text-[#666] uppercase tracking-wide px-3 mb-1">Projects</p>
-          <ProjectItem v-for="p in PROJECTS" :key="p.id" :project="p" @click="$emit('close')" />
+        <div class="w-[148px] py-2 overflow-y-auto" style="background:#dce4f5; max-height:360px">
+          <template v-for="(g, i) in PROJECT_GROUPS" :key="g.id">
+            <p class="text-[10px] font-bold text-[#666] uppercase tracking-wide px-3 mb-1" :class="i ? 'mt-2' : ''">{{ g.label }}</p>
+            <ProjectItem v-for="p in g.projects" :key="p.id" :project="p" @click="$emit('close')" />
+          </template>
           <div class="border-t border-[#b0b8d0] my-1" />
           <MenuItem icon="✉️" label="Email Me" :href="'mailto:danshandle@gmail.com'" small />
         </div>
@@ -45,7 +47,7 @@
 
 <script setup>
 import { defineComponent, h } from 'vue'
-import { PROJECTS } from '../data/projects.js'
+import { PROJECT_GROUPS } from '../data/projects.js'
 
 defineProps({ open: Boolean })
 defineEmits(['open', 'close', 'reset'])

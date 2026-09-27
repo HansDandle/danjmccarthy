@@ -25,14 +25,16 @@
 
       <!-- Bio sections -->
       <Section title="Who I am">
-        I'm a B2B sales and account management veteran turned indie software builder.
-        8+ years of customer-facing SaaS work - enterprise onboarding, customer success,
-        and getting people to actually get value from software.
+        I'm a B2B sales and account management veteran who builds his own software.
+        By day I'm an Account Executive at <strong>Recharge Media</strong>, selling advertising,
+        underwriting and sponsorships across four Central Texas radio stations - to local
+        businesses, agencies, nonprofits and city departments alike.
       </Section>
 
       <Section title="What I build">
-        I run <strong>Scout Industries</strong> - a portfolio of indie SaaS products I've built
-        and shipped alongside a full-time career. I think of myself as a code coxswain:
+        I run <strong>Scout Industries</strong> - a portfolio of indie products I've built
+        and shipped alongside a full-time career. The flagship is <strong>PourScout</strong>,
+        the CRM I prospect and sell from every day. I think of myself as a code coxswain:
         I don't row, I steer. AI agents handle the oars. Knowing where the boat is supposed
         to go - and why - that's the job.
       </Section>
@@ -58,7 +60,7 @@
           class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
           🐙 GitHub
         </a>
-        <a href="/danmccarthyresume.pdf" target="_blank"
+        <a href="/DanMcCarthyResume.pdf" target="_blank"
           class="flex items-center gap-1.5 px-3 py-1.5 border border-[#ddd] rounded-full text-[11px] font-medium no-underline text-[#333]">
           ⬇ Resume
         </a>
@@ -70,7 +72,7 @@
 <script setup>
 import { defineComponent, h } from 'vue'
 
-const tags = ['SaaS', 'Customer Success', 'Implementation', 'Indie Builder', 'Austin TX', 'TriviATX']
+const tags = ['B2B Sales', 'Media & Sponsorships', 'Account Management', 'Indie Builder', 'Austin TX', 'TriviATX']
 
 const Chip = defineComponent({
   props: ['label'],

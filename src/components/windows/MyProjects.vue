@@ -1,82 +1,67 @@
 <template>
   <div class="flex h-full text-[11px]">
-    <!-- Left panel -->
-    <div class="w-44 flex-shrink-0 bg-[#dce4f5] border-r border-[#b0b8d0] p-2 flex flex-col gap-2">
-      <p class="font-bold text-[#003580] text-[10px] uppercase tracking-wide border-b border-[#b0b8d0] pb-1 mb-1">Projects</p>
-      <button
-        v-for="p in projects"
-        :key="p.id"
-        class="text-left px-2 py-1 rounded hover:bg-[#316ac5] hover:text-white w-full truncate"
-        :class="selected?.id === p.id ? 'bg-[#316ac5] text-white' : ''"
-        @click="selected = p"
-      >{{ p.name }}</button>
-    </div>
-
-    <!-- Main panel -->
-    <div class="flex-1 overflow-auto p-4 bg-white">
-      <div v-if="selected" class="flex flex-col gap-3">
-        <div class="flex items-center gap-3">
-          <span class="text-4xl">{{ selected.icon }}</span>
-          <div>
-            <h2 class="text-lg font-bold text-[#003580]">{{ selected.name }}</h2>
-            <div class="flex gap-1 flex-wrap mt-1">
-              <span v-for="t in selected.tags" :key="t"
-                class="bg-[#dce4f5] text-[#003580] px-1.5 py-0.5 rounded text-[10px]">{{ t }}</span>
-            </div>
-          </div>
-        </div>
-        <p class="text-[#333] leading-relaxed">{{ selected.description }}</p>
-        <div class="flex gap-2 mt-1">
-          <a v-if="selected.url" :href="selected.url" target="_blank" rel="noopener"
-            class="px-3 py-1 bg-[#316ac5] text-white rounded hover:bg-[#2255a0] text-[11px]">
-            🔗 Visit Site
-          </a>
-          <a v-if="selected.github" :href="selected.github" target="_blank" rel="noopener"
-            class="px-3 py-1 bg-[#333] text-white rounded hover:bg-[#555] text-[11px]">
-            🐙 GitHub
-          </a>
+    <!-- Left task pane -->
+    <div class="w-44 flex-shrink-0 p-2.5 flex flex-col gap-3 overflow-y-auto max-sm:hidden"
+      style="background:linear-gradient(180deg,#7ba2e7 0%,#6375d6 100%)">
+      <div class="rounded overflow-hidden">
+        <p class="font-bold text-[#215dc6] px-2.5 py-1.5" style="background:linear-gradient(90deg,#fff 0%,#c6d3f7 100%)">Other Places</p>
+        <div class="bg-[#d6dff7] px-2.5 py-2 flex flex-col gap-1.5">
+          <button
+            v-for="c in otherFolders" :key="c.id"
+            class="flex items-center gap-1.5 text-left text-[#215dc6] hover:underline"
+            @click="winStore.openWindow(`folder-${c.id}`)"
+          >
+            <span>📁</span><span>{{ c.label }}</span>
+          </button>
         </div>
       </div>
-      <div v-else class="text-[#888] flex flex-col items-center justify-center h-full gap-2">
-        <span class="text-5xl">📂</span>
-        <p>Select a project from the left panel</p>
+      <div class="rounded overflow-hidden">
+        <p class="font-bold text-[#215dc6] px-2.5 py-1.5" style="background:linear-gradient(90deg,#fff 0%,#c6d3f7 100%)">Details</p>
+        <div class="bg-[#d6dff7] px-2.5 py-2 text-[#333] leading-snug">
+          <p class="font-bold">{{ group.label }}</p>
+          <p class="mt-1">{{ group.projects.length }} {{ group.projects.length === 1 ? 'project' : 'projects' }}</p>
+          <p class="mt-1 text-[#555]">{{ group.blurb }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tiles -->
+    <div class="flex-1 overflow-auto bg-white p-3">
+      <div class="grid gap-2" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+        <component
+          v-for="p in group.projects" :key="p.id"
+          :is="p.url ? 'a' : 'div'"
+          v-bind="p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}"
+          class="flex items-start gap-2.5 p-2 rounded border border-transparent no-underline text-black cursor-default"
+          :class="[
+            p.url ? 'hover:bg-[#e8eefa] hover:border-[#b0c4ec]' : 'opacity-60',
+            p.featured ? 'col-span-full bg-[#fdf8e4] border-[#e8d98c]' : '',
+          ]"
+          :title="p.url || 'Coming soon'"
+        >
+          <img :src="p.favicon" :alt="p.label" class="w-8 h-8 object-contain flex-shrink-0 mt-0.5"
+            @error="e => e.target.style.visibility = 'hidden'" />
+          <div class="min-w-0">
+            <div class="font-bold text-[12px] flex items-center gap-1.5">
+              {{ p.label }}
+              <span v-if="p.featured" class="text-[9px] font-bold uppercase tracking-wide bg-[#316ac5] text-white px-1.5 py-px rounded">Daily driver</span>
+            </div>
+            <div class="text-[#555] leading-snug mt-0.5">{{ p.description }}</div>
+          </div>
+        </component>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { PROJECT_GROUPS } from '../../data/projects.js'
+import { useWindowsStore } from '../../stores/windowsStore.js'
 
-const projects = [
-  {
-    id: 'project1',
-    name: 'Project One',
-    icon: '📊',
-    tags: ['React', 'Node.js', 'PostgreSQL'],
-    description: 'Add your project description here. Tell visitors what problem it solves, the tech stack you used, and any interesting challenges you overcame building it.',
-    url: '#',
-    github: '#',
-  },
-  {
-    id: 'project2',
-    name: 'Project Two',
-    icon: '🌐',
-    tags: ['Vue', 'Python', 'FastAPI'],
-    description: 'Add your second project description here. Highlight what makes it unique and what you learned from building it.',
-    url: '#',
-    github: '#',
-  },
-  {
-    id: 'project3',
-    name: 'Project Three',
-    icon: '📱',
-    tags: ['React Native', 'Firebase'],
-    description: 'Add your third project description here.',
-    url: '#',
-    github: '#',
-  },
-]
+const props = defineProps({ category: { type: String, required: true } })
+const winStore = useWindowsStore()
 
-const selected = ref(projects[0])
+const group = computed(() => PROJECT_GROUPS.find(g => g.id === props.category))
+const otherFolders = computed(() => PROJECT_GROUPS.filter(g => g.id !== props.category))
 </script>

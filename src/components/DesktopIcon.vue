@@ -81,7 +81,8 @@ const showMobileTip = ref(false)
 let mobileTipTimer = null
 
 function onMobileTap() {
-  if (!props.href && props.tooltip) {
+  // Coming-soon items (url: null) show their tooltip instead of opening
+  if ((props.href === null || props.href === 'null') && props.tooltip) {
     clearTimeout(mobileTipTimer)
     showMobileTip.value = true
     mobileTipTimer = setTimeout(() => { showMobileTip.value = false }, 2500)
@@ -137,7 +138,7 @@ function onMouseUp() {
 }
 
 function onDblClick() {
-  if (props.href) window.open(props.href, '_blank', 'noopener')
+  if (props.href && props.href !== 'null') window.open(props.href, '_blank', 'noopener')
   else emit('open')
 }
 

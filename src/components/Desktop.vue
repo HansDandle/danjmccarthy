@@ -49,7 +49,7 @@
       @minimize="winStore.toggleMinimize(w.id)"
       @activate="winStore.setActive(w.id)"
     >
-      <component :is="windowComponent(w.id)" />
+      <component :is="windowComponent(w.id)" v-bind="windowProps(w.id)" />
     </XpWindow>
   </div>
 
@@ -74,7 +74,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWindowsStore } from '../stores/windowsStore.js'
 import { WINDOWS } from '../data/windows.js'
-import { PROJECTS } from '../data/projects.js'
+import { PROJECT_GROUPS } from '../data/projects.js'
 import XpWindow from './XpWindow.vue'
 import DesktopIcon from './DesktopIcon.vue'
 import Taskbar from './Taskbar.vue'
@@ -83,6 +83,7 @@ import MyCV from './windows/MyCV.vue'
 import Minesweeper from './windows/Minesweeper.vue'
 import Terminal from './windows/Terminal.vue'
 import Bio from './windows/Bio.vue'
+import MyProjects from './windows/MyProjects.vue'
 
 defineEmits(['reset'])
 const winStore = useWindowsStore()
@@ -122,17 +123,16 @@ const linkIcons = [
   ...gridPos(portfolioIcons.length + i),
 }))
 
-// Project icons — continue the grid after portfolio icons
-const projectIcons = PROJECTS.map((p, i) => ({
-  id: p.id,
-  imgSrc: p.favicon,
-  label: p.label,
-  href: p.url,
-  tooltip: p.description,
+// Project folders (one per category) — continue the grid after link icons
+const folderIcons = PROJECT_GROUPS.map((g, i) => ({
+  id: `folder-${g.id}`,
+  icon: '📁',
+  label: g.label,
+  tooltip: `${g.projects.length} projects: ${g.projects.map(p => p.label).join(', ')}`,
   ...gridPos(portfolioIcons.length + linkIcons.length + i),
 }))
 
-const allIcons = [...portfolioIcons, ...linkIcons, ...projectIcons]
+const allIcons = [...portfolioIcons, ...linkIcons, ...folderIcons]
 
 // ── Window plumbing ──────────────────────────────────────
 function winDef(id) {
@@ -147,7 +147,11 @@ function winDef(id) {
 }
 
 const componentMap = { cv: MyCV, minesweeper: Minesweeper, terminal: Terminal, bio: Bio }
-function windowComponent(id) { return componentMap[id] }
+function windowComponent(id) { return id.startsWith('folder-') ? MyProjects : componentMap[id] }
+function windowProps(id) {
+  const w = WINDOWS.find(w => w.id === id)
+  return w.category ? { category: w.category } : {}
+}
 
 function onTaskbarClick(id) {
   const w = winStore.openWindows.find(x => x.id === id)

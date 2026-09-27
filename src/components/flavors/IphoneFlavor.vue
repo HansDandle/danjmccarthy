@@ -73,7 +73,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, defineComponent, h } from 'vue'
-import { PROJECTS } from '../../data/projects.js'
+import { PROJECT_GROUPS } from '../../data/projects.js'
 import MyCV from '../windows/MyCV.vue'
 import Bio from '../windows/Bio.vue'
 
@@ -92,16 +92,21 @@ onUnmounted(() => clearInterval(interval))
 
 const ProjectsApp = defineComponent({
   setup() {
-    return () => h('div', { class: 'p-4 grid grid-cols-2 gap-3' },
-      PROJECTS.map(p => h(p.url ? 'a' : 'div', {
-        ...(p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}),
-        class: 'flex items-center gap-3 p-3 rounded-2xl border border-[#eee] no-underline text-inherit' + (p.url ? '' : ' opacity-60'),
-      }, [
-        h('img', { src: p.favicon, class: 'w-8 h-8 object-contain rounded-lg', onError: e => e.target.style.display = 'none' }),
-        h('div', [
-          h('div', { class: 'font-semibold text-[12px]' }, p.label),
-          h('div', { class: 'text-[#888] text-[10px] mt-0.5 leading-snug line-clamp-2' }, p.description),
-        ]),
+    return () => h('div', { class: 'p-4 space-y-5' },
+      PROJECT_GROUPS.map(g => h('div', [
+        h('p', { class: 'text-[11px] font-semibold uppercase tracking-wide text-[#8e8e93] mb-2 px-1' }, g.label),
+        h('div', { class: 'grid grid-cols-2 gap-3' },
+          g.projects.map(p => h(p.url ? 'a' : 'div', {
+            ...(p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}),
+            class: 'flex items-center gap-3 p-3 rounded-2xl border border-[#eee] no-underline text-inherit' + (p.url ? '' : ' opacity-60') + (p.featured ? ' col-span-2' : ''),
+          }, [
+            h('img', { src: p.favicon, class: 'w-8 h-8 object-contain rounded-lg', onError: e => e.target.style.display = 'none' }),
+            h('div', [
+              h('div', { class: 'font-semibold text-[12px]' }, p.label),
+              h('div', { class: 'text-[#888] text-[10px] mt-0.5 leading-snug' + (p.featured ? '' : ' line-clamp-2') }, p.description),
+            ]),
+          ]))
+        ),
       ]))
     )
   },
@@ -114,7 +119,7 @@ const apps = [
   { id: 'linkedin', name: 'LinkedIn', emoji: '💼', bg: 'linear-gradient(135deg,#0077b5,#004182)', href: 'https://linkedin.com/in/danjmccarthy' },
   { id: 'github',   name: 'GitHub',   emoji: '🐙', bg: 'linear-gradient(135deg,#333,#111)', href: 'https://github.com/HansDandle' },
   { id: 'email',    name: 'Mail',     emoji: '✉️', bg: 'linear-gradient(135deg,#5ac8fa,#007aff)', href: 'mailto:danshandle@gmail.com' },
-  { id: 'resume',   name: 'PDF',      emoji: '⬇️', bg: 'linear-gradient(135deg,#ff2d55,#c0002f)', href: '/danmccarthyresume.pdf' },
+  { id: 'resume',   name: 'PDF',      emoji: '⬇️', bg: 'linear-gradient(135deg,#ff2d55,#c0002f)', href: '/DanMcCarthyResume.pdf' },
   { id: 'trivia',   name: 'TriviATX', emoji: '🎤', bg: 'linear-gradient(135deg,#af52de,#7d29b0)', content: '<div class="p-5"><h2 class="font-bold text-lg mb-2">TriviATX</h2><p>Austin\'s weekly pub quiz - 100+ editions hosted by Dan. Every week, live, in person. Ask him about it.</p></div>' },
 ]
 

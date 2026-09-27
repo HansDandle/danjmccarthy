@@ -19,19 +19,24 @@
             <!-- Bio -->
             <Bio v-else-if="modal.type === 'bio'" />
             <!-- Projects -->
-            <div v-else class="p-4 grid grid-cols-2 gap-3">
-              <component v-for="p in projects" :key="p.id"
-                :is="p.url ? 'a' : 'div'"
-                v-bind="p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}"
-                class="flex items-center gap-3 p-3 rounded-xl border border-[#eee] no-underline text-inherit transition-colors"
-                :class="p.url ? 'hover:border-[#aaa] cursor-pointer' : 'opacity-50 cursor-default'">
-                <img :src="p.favicon" class="w-8 h-8 object-contain rounded flex-shrink-0"
-                  @error="e => e.target.style.display='none'" />
-                <div>
-                  <div class="font-semibold text-[12px]">{{ p.label }}</div>
-                  <div class="text-[#888] text-[10px] mt-0.5 leading-snug line-clamp-2">{{ p.description }}</div>
+            <div v-else class="p-4 space-y-4">
+              <div v-for="g in groups" :key="g.id">
+                <p class="text-[11px] font-bold uppercase tracking-wide text-[#999] mb-2">{{ g.icon }} {{ g.label }}</p>
+                <div class="grid grid-cols-2 gap-3">
+                  <component v-for="p in g.projects" :key="p.id"
+                    :is="p.url ? 'a' : 'div'"
+                    v-bind="p.url ? { href: p.url, target: '_blank', rel: 'noopener' } : {}"
+                    class="flex items-center gap-3 p-3 rounded-xl border border-[#eee] no-underline text-inherit transition-colors"
+                    :class="[p.url ? 'hover:border-[#aaa] cursor-pointer' : 'opacity-50 cursor-default', p.featured ? 'col-span-2' : '']">
+                    <img :src="p.favicon" class="w-8 h-8 object-contain rounded flex-shrink-0"
+                      @error="e => e.target.style.display='none'" />
+                    <div>
+                      <div class="font-semibold text-[12px]">{{ p.label }}</div>
+                      <div class="text-[#888] text-[10px] mt-0.5 leading-snug" :class="p.featured ? '' : 'line-clamp-2'">{{ p.description }}</div>
+                    </div>
+                  </component>
                 </div>
-              </a>
+              </div>
             </div>
           </div>
         </div>
@@ -104,9 +109,9 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import MyCV from '../windows/MyCV.vue'
 import Bio from '../windows/Bio.vue'
-import { PROJECTS } from '../../data/projects.js'
+import { PROJECT_GROUPS } from '../../data/projects.js'
 
-const projects = PROJECTS
+const groups = PROJECT_GROUPS
 const container = ref(null)
 const canvas = ref(null)
 const modal = ref(null)
