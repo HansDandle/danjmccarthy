@@ -1,7 +1,8 @@
 <template>
-  <div class="bg-[#c0c0c0] p-2 flex flex-col items-center gap-2 select-none h-full" style="font-family: 'Courier New', monospace">
+  <div ref="rootEl" class="bg-[#c0c0c0] p-2 flex flex-col items-center gap-2 select-none h-full overflow-hidden" style="font-family: 'Courier New', monospace">
     <!-- Header panel -->
-    <div class="xp-inset w-full px-2 py-1 bg-[#c0c0c0] flex items-center justify-between">
+    <div ref="headerEl" class="xp-inset px-2 py-1 bg-[#c0c0c0] flex items-center justify-between flex-shrink-0"
+      :style="{ width: (cellSize * COLS + 4) + 'px' }">
       <div class="xp-inset bg-black text-[#ff0000] text-lg font-bold px-1 min-w-[3ch] text-center tabular-nums">
         {{ String(minesLeft).padStart(3, '0') }}
       </div>
@@ -33,7 +34,7 @@
       >{{ cellLabel(cell) }}</button>
     </div>
 
-    <p class="text-[10px] text-[#444]">Tap: reveal · Long-press: flag</p>
+    <p ref="hintEl" class="text-[10px] text-[#444] flex-shrink-0">{{ isTouch ? 'Tap: reveal · Long-press: flag' : 'Click: reveal · Right-click: flag' }}</p>
   </div>
 </template>
 
@@ -41,11 +42,33 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const ROWS = 9, COLS = 9, MINES = 10
+const isTouch = window.matchMedia('(pointer: coarse)').matches
 
-const containerW = ref(300)
-const cellSize = computed(() => Math.floor(Math.min(containerW.value - 16, window.innerHeight * 0.55) / COLS))
-function updateSize() { containerW.value = Math.min(window.innerWidth, 500) }
-onMounted(() => { updateSize(); window.addEventListener('resize', updateSize) })
+// Fit the grid to the space the window gives us (root minus padding, header, hint, gaps, borders)
+const rootEl = ref(null)
+const headerEl = ref(null)
+const hintEl = ref(null)
+const avail = ref({ w: 200, h: 200 })
+const cellSize = computed(() => {
+  const size = Math.floor(Math.min(avail.value.w / COLS, avail.value.h / ROWS))
+  return Math.max(14, Math.min(size, 40))
+})
+function updateSize() {
+  const el = rootEl.value
+  if (!el) return
+  const CHROME = 16 + 4 // root padding + grid inset border
+  const GAPS = 16       // two gap-2 between header / grid / hint
+  avail.value = {
+    w: el.clientWidth - CHROME,
+    h: el.clientHeight - CHROME - GAPS - (headerEl.value?.offsetHeight ?? 40) - (hintEl.value?.offsetHeight ?? 15),
+  }
+}
+let resizeObs = null
+onMounted(() => {
+  updateSize()
+  resizeObs = new ResizeObserver(updateSize)
+  resizeObs.observe(rootEl.value)
+})
 
 const cells = ref([])
 const gameState = ref('idle') // idle | playing | won | lost
@@ -164,7 +187,7 @@ function cellLabel(cell) {
 
 reset()
 
-onUnmounted(() => { clearInterval(timerInterval); window.removeEventListener('resize', updateSize) })
+onUnmounted(() => { clearInterval(timerInterval); resizeObs?.disconnect() })
 
 let longPressTimer = null
 function onTouchStart(i) {
